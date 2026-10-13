@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 0,
+      "t": 1,
       "title": "Room now, or protocol only?",
       "decision": "Ship a live Silver Board room as org infrastructure, or keep the Board as prose until Mission Control Sprint 6.",
       "brief": "Thierry asked 7MAN to create an interactive Silver Board, using Roast Room as UX template, and to plan 7Ei OS integration. Charter Art. 1 forbids a debate panel. Precedence 01 forbids a required cloud runner.",
@@ -67,13 +67,13 @@
     },
     {
       "type": "phase",
-      "t": 0,
+      "t": 1,
       "phase": "opening",
       "label": "The field is speaking"
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "buffett",
       "text": "SEAT: Buffett\nSTANCE: Conditional\nOPTION SCORES: A 7/10 · B 6/10 · C 4/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Build the small room now if it stays cheap and private; do not fund a platform.\nTHROUGH MY LENS:\n- Circle of competence: 7Ei already runs agents; a local viewer is inside it (S002).\n- Ruin first: a public likeness-board would be a reputation hole (S005).\n- Fat pitch: waiting for Mission Control Sprint 6 is optional, not required (S007).\nTHE TENSION I HOLD: Attention spent on furniture vs attention spent on sittings that change a gate.\nWHAT WOULD CHANGE MY MIND: A cost that starts eating engineering weeks every sprint.\nQUESTION FOR THE CHAIR: What is the cash and calendar cost of v0 versus v1 portraits?",
@@ -89,7 +89,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Take the terrain (a used table) before arguing the campaign (MC Sprint 6).\nTHROUGH MY LENS:\n- Win without fighting: a file protocol already is the army; the room is the flag (S001).\n- Terrain: humans will not consult a vault note under pressure (S002).\n- Prolonged operations: parking until Sprint 6 is a long siege with no grain (S005).\nTHE TENSION I HOLD: A flag with no army is theatre; an army with no flag is invisible.\nWHAT WOULD CHANGE MY MIND: Proof that operators already convene the Board from the vault without being asked.\nQUESTION FOR THE CHAIR: Who will actually type /silver-board in the next fourteen days?",
@@ -105,7 +105,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "bezos",
       "text": "SEAT: Bezos\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 4/10 · C 2/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: This is a two-way door. Ship the local room; reverse it if nobody sits.\nTHROUGH MY LENS:\n- Two-way door: a private Node viewer is reversible (S002).\n- Work backwards: the customer of the Board is Thierry under a hard call, not a slide (S001).\n- Day 1: waiting for MC is process as proxy (S004).\nTHE TENSION I HOLD: One-way would be public portraits and a hosted model. That is not what was asked.\nWHAT WOULD CHANGE MY MIND: A P01 requirement to send briefs to a third-party API.\nQUESTION FOR THE CHAIR: Are we inventing a product or installing a working backwards loop?",
@@ -121,7 +121,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 4,
       "round": 1,
       "seat": "taleb",
       "text": "SEAT: Taleb\nSTANCE: Conditional\nOPTION SCORES: A 6/10 · B 5/10 · C 7/10\nCONFIDENCE: 5/5\nRUIN RISK: possible\nPRECEDENCE FLAG: none\n\nTHE CALL: Protocol with skin. A room without sittings is a fragile toy; prose without use is also a toy.\nTHROUGH MY LENS:\n- Skin in the game: if 7MAN does not convene it on the next gate, it is consultant theatre (S001).\n- Via negativa: do not add portraits, APIs, or PDFs (S005).\n- Narrative fallacy: \"interactive board\" can hide that nobody changed a decision (S004).\nTHE TENSION I HOLD: Option C is honest if the org will not sit. Option A is honest if the first sitting is a real 777 score.\nWHAT WOULD CHANGE MY MIND: A scheduled gate that will use this in fourteen days.\nQUESTION FOR THE CHAIR: Who is harmed if the room is pretty and the Signal is ignored?",
@@ -137,7 +137,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 4,
       "round": 1,
       "seat": "watts",
       "text": "SEAT: Watts\nSTANCE: Conditional\nOPTION SCORES: A 6/10 · B 5/10 · C 6/10\nCONFIDENCE: 3/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Do not confuse the table with the seeing.\nTHROUGH MY LENS:\n- Menu is not the meal (S001).\n- Clutching a board aesthetic is insecurity dressed as governance (S002).\n- Play: a small local room can be play; a platform cannot (S005).\nTHE TENSION I HOLD: Humans sometimes need a table to remember they have a mind.\nWHAT WOULD CHANGE MY MIND: If v0 starts needing a brand film.\nQUESTION FOR THE CHAIR: Can we sit without watching ourselves sit?",
@@ -153,7 +153,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 4,
       "round": 1,
       "seat": "rule",
       "text": "SEAT: Rule\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Prefer stuff: a repo you can run, not a note that claims a board exists.\nTHROUGH MY LENS:\n- Stuff vs paper (S001).\n- A slide deck is not a mine (S006).\n- Patience: fill the other forty brains later (S003).\nTHE TENSION I HOLD: Grade of v0 is a local viewer plus seven seats. Do not promote it as a finished field.\nWHAT WOULD CHANGE MY MIND: If running it required someone else's cloud.\nQUESTION FOR THE CHAIR: What is the working capital — tokens per sitting?",
@@ -169,7 +169,7 @@
     },
     {
       "type": "tensions",
-      "t": 2,
+      "t": 4,
       "tensions": [
         {
           "question": "Is a live room substance or theatre?",
@@ -215,13 +215,13 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "tensions",
       "label": "Tensions named"
     },
     {
       "type": "draft",
-      "t": 2,
+      "t": 4,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -242,19 +242,19 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 5,
       "round": 2,
       "seat": "buffett",
       "text": "SEAT: Buffett\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Cheap, private, reversible.",
@@ -270,7 +270,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 5,
       "round": 2,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Take the terrain now.",
@@ -286,7 +286,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 5,
       "round": 2,
       "seat": "bezos",
       "text": "SEAT: Bezos\nVOTE: Endorse\nOPTION SCORES: A 9/10 · B 3/10 · C 2/10\nONE LINE THE SIGNAL MUST NOT DROP: Two-way door.",
@@ -302,7 +302,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 5,
       "round": 2,
       "seat": "taleb",
       "text": "SEAT: Taleb\nVOTE: Endorse with amendment\nOPTION SCORES: A 7/10 · B 4/10 · C 5/10\nAMENDMENT OR HOLD-OUT: Write the 14-day sitting as kill criteria, not a hope.\nONE LINE THE SIGNAL MUST NOT DROP: Skin in the game.",
@@ -318,7 +318,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 5,
       "round": 2,
       "seat": "watts",
       "text": "SEAT: Watts\nVOTE: Endorse\nOPTION SCORES: A 7/10 · B 5/10 · C 5/10\nONE LINE THE SIGNAL MUST NOT DROP: The table is not the seeing.",
@@ -334,7 +334,7 @@
     },
     {
       "type": "seat_done",
-      "t": 4,
+      "t": 5,
       "round": 2,
       "seat": "rule",
       "text": "SEAT: Rule\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Stuff you can run.",
@@ -350,7 +350,7 @@
     },
     {
       "type": "signal",
-      "t": 4,
+      "t": 5,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -387,7 +387,7 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 5,
       "phase": "signal",
       "label": "The Board speaks"
     }
