@@ -1,13 +1,13 @@
 # Seat avatars
 
-Drop 7MKT cartoons here as `{key}-base.webp` (required) plus optional `{key}-open.webp`, `{key}-mid.webp`, `{key}-blink.webp`.
+Drop 7MKT busts here as `{key}-base.webp` (required) plus optional `{key}-open.webp`, `{key}-mid.webp`, `{key}-blink.webp`.
 
-Keys must match `board/roster.json`. See nest `GUIDES/SILVER_BOARD_CARTOON_AVATARS.md`.
+Keys must match `board/roster.json`. Visual spec: nest `GUIDES/SILVER_BOARD_PHOTOREAL_AVATARS.md` (supersedes cartoons). Cartoons stay until a key is replaced.
 
-The room falls back to a silhouette + initials until the file exists. Do not commit photoreal likenesses.
+The room falls back to a silhouette + initials until the file exists. Simulated advisors — not the people, no endorsement.
 
-Priority 1 (default table, 2026-10-13): `dalio`, `buffett`, `suntzu`, `bezos`, `taleb`, `watts`, `rule` — each has `base` / `blink` / `open` / `mid`.
+Photoreal Priority 1 (default table, 2026-10-13): `dalio`, `buffett`, `suntzu`, `bezos`, `taleb`, `watts`, `rule` — photoreal, recognizable from public appearance (Sun Tzu = conventional historical iconography, not a living actor).
 
-Priority 2 (rest of roster, 2026-10-13): remaining 48 keys, same four frames. Stark is a fictional comic-armor inventor, not an actor. Editorial cartoon busts of simulated advisors, not photographs, not roast-room portraits.
+Remaining 112 seats still have cartoon four-frames until replaced.
 
-Xlsx expansion (2026-10-13, Thierry workbook): 64 new keys, each with `base` / `blink` / `open` / `mid`. Held: Gandalf (Tolkien — 7LEX no), Saudi Aramco / PEMEX / Sinopec (organisations). Keys in nest `RESEARCH/SILVER_BOARD_XLSX_GAP_2026_10_13.md`. Roster keys live as of PR #8 (119 seats).
+Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations). Satoshi stays hooded. Stark stays comic-armor, not a living actor.
