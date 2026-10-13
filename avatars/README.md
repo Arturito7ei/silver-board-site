@@ -16,6 +16,8 @@ Photoreal remaining original-roster historical + mythic (2026-10-13): `alexander
 
 Photoreal xlsx living batch 1 (2026-10-13): `vitalik`, `jensen`, `altman`, `dorsey`, `carney`, `amodei`, `hassabis`, `alden` — self-recognition pitch bar.
 
-Remaining 50 seats still cartoons until replaced.
+Photoreal xlsx living batch 2 (2026-10-13): `yakovenko`, `armstrong`, `allaire`, `caitlinlong`, `peirce`, `branson` (Mark Branson / FINMA, not Richard), `jordan`, `hildebrand`, `carstens`, `lassonde`, `bristow`, `palmer`, `vongreyerz`, `sebag`, `pozsar`, `collison`, `levchin`, `masters`, `garlinghouse`, `haun`, `dixon`, `kulechov`, `leshner`, `brooks`, `nazarov`, `mesaric`, `hardy`, `weir`, `glasenberg`, `tornqvist`, `yergin`, `moser`, `murray`, `mobius` — self-recognition pitch bar.
+
+Remaining 16 seats still cartoons until replaced (xlsx historical).
 
 Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).
