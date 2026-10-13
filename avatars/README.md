@@ -16,8 +16,8 @@ Photoreal remaining original-roster historical + mythic (2026-10-13): `alexander
 
 Photoreal xlsx living batch 1 (2026-10-13): `vitalik`, `jensen`, `altman`, `dorsey`, `carney`, `amodei`, `hassabis`, `alden` — self-recognition pitch bar.
 
-Photoreal xlsx living batch 2 (2026-10-13): `yakovenko`, `armstrong`, `allaire`, `caitlinlong`, `peirce`, `branson` (Mark Branson / FINMA, not Richard), `jordan`, `hildebrand`, `carstens`, `lassonde`, `bristow`, `palmer`, `vongreyerz`, `sebag`, `pozsar`, `collison`, `levchin`, `masters`, `garlinghouse`, `haun`, `dixon`, `kulechov`, `leshner`, `brooks`, `nazarov`, `mesaric`, `hardy`, `weir`, `glasenberg`, `tornqvist`, `yergin`, `moser`, `murray`, `mobius` — self-recognition pitch bar.
+Photoreal xlsx living batch 2 (2026-10-13): `yakovenko`, `armstrong`, `allaire`, `caitlinlong`, `peirce`, `branson` (Mark Branson / FINMA, not Richard), `jordan`, `hildebrand`, `carstens`, `volcker`, `greenspan`, `friedman`, `lassonde`, `bristow`, `palmer`, `vongreyerz`, `sebag`, `pozsar`, `collison`, `levchin`, `masters`, `garlinghouse`, `haun`, `dixon`, `kulechov`, `leshner`, `brooks`, `nazarov`, `mesaric`, `hardy`, `weir`, `glasenberg`, `tornqvist`, `yergin`, `marcrich`, `dauphin`, `moser`, `murray`, `mobius` — 39 keys; living self-recognition; volcker/greenspan/friedman/marcrich/dauphin photographic (not film actors).
 
-Remaining 16 seats still cartoons until replaced (xlsx historical).
+Remaining 11 seats still cartoons until replaced (xlsx historical/mythic: newton, adamsmith, hayek, mises, rothschild, jpmorgan, solomon, solon, pinkusgreen, zeno, seneca).
 
 Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).
