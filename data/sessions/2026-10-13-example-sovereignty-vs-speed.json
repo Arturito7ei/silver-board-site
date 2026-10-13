@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 2,
+      "t": 1,
       "title": "Room now, or protocol only?",
       "decision": "Ship a live Silver Board room as org infrastructure, or keep the Board as prose until Mission Control Sprint 6.",
       "brief": "Thierry asked 7MAN to create an interactive Silver Board, using Roast Room as UX template, and to plan 7Ei OS integration. Charter Art. 1 forbids a debate panel. Precedence 01 forbids a required cloud runner.",
@@ -67,7 +67,7 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 1,
       "phase": "opening",
       "label": "The field is speaking"
     },
@@ -221,7 +221,7 @@
     },
     {
       "type": "draft",
-      "t": 4,
+      "t": 5,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -242,19 +242,19 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 5,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 5,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "buffett",
       "text": "SEAT: Buffett\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Cheap, private, reversible.",
@@ -270,7 +270,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Take the terrain now.",
@@ -286,7 +286,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "bezos",
       "text": "SEAT: Bezos\nVOTE: Endorse\nOPTION SCORES: A 9/10 · B 3/10 · C 2/10\nONE LINE THE SIGNAL MUST NOT DROP: Two-way door.",
@@ -302,7 +302,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "taleb",
       "text": "SEAT: Taleb\nVOTE: Endorse with amendment\nOPTION SCORES: A 7/10 · B 4/10 · C 5/10\nAMENDMENT OR HOLD-OUT: Write the 14-day sitting as kill criteria, not a hope.\nONE LINE THE SIGNAL MUST NOT DROP: Skin in the game.",
@@ -318,7 +318,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "watts",
       "text": "SEAT: Watts\nVOTE: Endorse\nOPTION SCORES: A 7/10 · B 5/10 · C 5/10\nONE LINE THE SIGNAL MUST NOT DROP: The table is not the seeing.",
@@ -334,7 +334,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 7,
       "round": 2,
       "seat": "rule",
       "text": "SEAT: Rule\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Stuff you can run.",
@@ -350,7 +350,7 @@
     },
     {
       "type": "signal",
-      "t": 6,
+      "t": 7,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -387,7 +387,7 @@
     },
     {
       "type": "phase",
-      "t": 6,
+      "t": 7,
       "phase": "signal",
       "label": "The Board speaks"
     }

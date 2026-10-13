@@ -18,6 +18,8 @@ Photoreal xlsx living batch 1 (2026-10-13): `vitalik`, `jensen`, `altman`, `dors
 
 Photoreal xlsx living batch 2 (2026-10-13): `yakovenko`, `armstrong`, `allaire`, `caitlinlong`, `peirce`, `branson` (Mark Branson / FINMA, not Richard), `jordan`, `hildebrand`, `carstens`, `volcker`, `greenspan`, `friedman`, `lassonde`, `bristow`, `palmer`, `vongreyerz`, `sebag`, `pozsar`, `collison`, `levchin`, `masters`, `garlinghouse`, `haun`, `dixon`, `kulechov`, `leshner`, `brooks`, `nazarov`, `mesaric`, `hardy`, `weir`, `glasenberg`, `tornqvist`, `yergin`, `marcrich`, `dauphin`, `moser`, `murray`, `mobius` — 39 keys; living self-recognition; volcker/greenspan/friedman/marcrich/dauphin photographic (not film actors).
 
-Remaining 11 seats still cartoons until replaced (xlsx historical/mythic: newton, adamsmith, hayek, mises, rothschild, jpmorgan, solomon, solon, pinkusgreen, zeno, seneca).
+Photoreal xlsx historical / mythic (2026-10-13): `newton`, `adamsmith`, `hayek`, `mises`, `rothschild`, `jpmorgan`, `solomon`, `solon`, `pinkusgreen`, `zeno`, `seneca` — conventional iconography / public photographs, not living actors.
+
+Seated roster is photoreal. No remaining cartoon seats.
 
 Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).
