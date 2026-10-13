@@ -73,7 +73,7 @@
     },
     {
       "type": "seat_done",
-      "t": 4,
+      "t": 3,
       "round": 1,
       "seat": "buffett",
       "text": "SEAT: Buffett\nSTANCE: Conditional\nOPTION SCORES: A 7/10 · B 6/10 · C 4/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Build the small room now if it stays cheap and private; do not fund a platform.\nTHROUGH MY LENS:\n- Circle of competence: 7Ei already runs agents; a local viewer is inside it (S002).\n- Ruin first: a public likeness-board would be a reputation hole (S005).\n- Fat pitch: waiting for Mission Control Sprint 6 is optional, not required (S007).\nTHE TENSION I HOLD: Attention spent on furniture vs attention spent on sittings that change a gate.\nWHAT WOULD CHANGE MY MIND: A cost that starts eating engineering weeks every sprint.\nQUESTION FOR THE CHAIR: What is the cash and calendar cost of v0 versus v1 portraits?",
@@ -89,7 +89,7 @@
     },
     {
       "type": "seat_done",
-      "t": 4,
+      "t": 3,
       "round": 1,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Take the terrain (a used table) before arguing the campaign (MC Sprint 6).\nTHROUGH MY LENS:\n- Win without fighting: a file protocol already is the army; the room is the flag (S001).\n- Terrain: humans will not consult a vault note under pressure (S002).\n- Prolonged operations: parking until Sprint 6 is a long siege with no grain (S005).\nTHE TENSION I HOLD: A flag with no army is theatre; an army with no flag is invisible.\nWHAT WOULD CHANGE MY MIND: Proof that operators already convene the Board from the vault without being asked.\nQUESTION FOR THE CHAIR: Who will actually type /silver-board in the next fourteen days?",
@@ -254,7 +254,7 @@
     },
     {
       "type": "seat_done",
-      "t": 6,
+      "t": 5,
       "round": 2,
       "seat": "buffett",
       "text": "SEAT: Buffett\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Cheap, private, reversible.",

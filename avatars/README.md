@@ -10,6 +10,8 @@ Photoreal Priority 1 (default table, 2026-10-13): `dalio`, `buffett`, `suntzu`, 
 
 Photoreal living batch (2026-10-13): `munger`, `druckenmiller`, `lynch`, `marks`, `burry`, `ptj`, `musk`, `thiel`, `naval`, `peterson`, `rogers`, `faber`, `casey`, `maloney`, `rickards`, `macleod`, `zang` — self-recognition pitch bar.
 
-Remaining 95 seats still have cartoon four-frames until replaced.
+Photoreal historical / fictional batch (2026-10-13): `jobs`, `simons`, `churchill`, `lincoln`, `lky`, `tesla`, `davinci`, `stark` (comic-armor inventor, not a living actor), `satoshi` (hooded, no identity), `midas` (mythic archetype).
 
-Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations). Satoshi stays hooded. Stark stays comic-armor, not a living actor.
+Remaining 85 seats still have cartoon four-frames until replaced.
+
+Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).
