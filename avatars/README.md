@@ -14,6 +14,8 @@ Photoreal historical / fictional batch (2026-10-13): `jobs`, `simons`, `churchil
 
 Photoreal remaining original-roster historical + mythic (2026-10-13): `alexander`, `caesar`, `napoleon`, `genghis`, `machiavelli`, `troosevelt`, `turing`, `vonneumann`, `feynman`, `aurelius`, `socrates`, `aristotle`, `nietzsche`, `laotzu`, `kant`, `jung`, `rumi`, `ramdass`, `eckhart`, `teilhard`, `huxley`, `krishnamurti`, `aurobindo`, `hermes`, `enki`, `xipetotec`, `kinichahau` — conventional iconography / public photographs / folklore archetypes, not living actors.
 
-Remaining 58 seats (xlsx living + xlsx historical) still cartoons until replaced.
+Photoreal xlsx living batch 1 (2026-10-13): `vitalik`, `jensen`, `altman`, `dorsey`, `carney`, `amodei`, `hassabis`, `alden` — self-recognition pitch bar.
+
+Remaining 50 seats still cartoons until replaced.
 
 Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).

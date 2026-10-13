@@ -23,6 +23,9 @@ const state = {
   geo: {},
   writable: false,
   disclaimer: "",
+  attachments: [],
+  dictating: false,
+  recognition: null,
 };
 
 function esc(s) {
@@ -295,10 +298,19 @@ function pushFeed(seat, f) {
   $("feed").prepend(card);
 }
 
+function setComposerMode(live) {
+  $("topic").classList.toggle("live", live);
+  $("topicTitle").hidden = !live;
+  $("composer").classList.toggle("collapsed", live);
+  $("options").hidden = !live;
+}
+
 function showSignal(sig) {
   $("waiting").hidden = true;
   $("caption").hidden = true;
-  $("signalCard").hidden = false;
+  const card = $("signalCard");
+  card.hidden = false;
+  card.classList.remove("minimized");
   $("stage").classList.remove("live");
   stopTalk();
   $("spot").classList.remove("on");
@@ -327,7 +339,7 @@ function showSignal(sig) {
 }
 
 function applySetup(d) {
-  $("topic").hidden = false;
+  setComposerMode(true);
   $("topicTitle").textContent = d.title || d.decision || "Sitting";
   $("options").innerHTML = (d.options || []).map((o) => `<span class="opt">${esc(o.id)}: ${esc(o.label)}</span>`).join("");
   if (d.chair) state.chairKey = d.chair;
@@ -409,11 +421,160 @@ function resetStage() {
   $("spot").classList.remove("on");
   $("waiting").hidden = false;
   $("caption").hidden = true;
-  $("signalCard").hidden = true;
-  $("topic").hidden = true;
+  const card = $("signalCard");
+  card.hidden = true;
+  card.classList.remove("minimized", "expanded");
+  setComposerMode(false);
   $("tensionBox").innerHTML = '<span class="muted">Waiting for the field.</span>';
   $("feed").innerHTML = '<div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>';
   for (const li of $("stepper").querySelectorAll("li")) li.classList.remove("on", "done");
+}
+
+function renderAttachList() {
+  const list = $("attachList");
+  if (!state.attachments.length) {
+    list.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+  list.hidden = false;
+  list.innerHTML = state.attachments.map((f, i) => `<li>${esc(f.name)} <button type="button" data-rm="${i}" aria-label="Remove">×</button></li>`).join("");
+  list.querySelectorAll("[data-rm]").forEach((b) => {
+    b.onclick = () => {
+      state.attachments.splice(Number(b.dataset.rm), 1);
+      renderAttachList();
+    };
+  });
+}
+
+function setComposerHint(text, ok = false) {
+  const el = $("composerHint");
+  el.textContent = text || "";
+  el.classList.toggle("ok", ok);
+}
+
+async function fileToAttachment(file) {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return { name: file.name, data: btoa(binary) };
+}
+
+async function submitQuery(ev) {
+  ev.preventDefault();
+  const query = $("queryInput").value.trim();
+  if (!query) {
+    setComposerHint("Type a question for the board.");
+    return;
+  }
+  if (STATIC || !state.writable) {
+    setComposerHint("Local room needed — run npm start on this machine.");
+    return;
+  }
+  $("querySubmit").disabled = true;
+  setComposerHint("Opening sitting…");
+  try {
+    const attachments = await Promise.all(state.attachments.map(fileToAttachment));
+    const res = await api("/api/sessions", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query, attachments }),
+    });
+    state.attachments = [];
+    $("attachFiles").value = "";
+    renderAttachList();
+    $("queryInput").value = "";
+    setComposerHint(res.hint || "Sitting opened. Run /silver-board in Claude Code.", true);
+    if (res.id) stream(res.id, false);
+  } catch (e) {
+    setComposerHint(String(e.message || e));
+  } finally {
+    $("querySubmit").disabled = false;
+  }
+}
+
+function bindDictate() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = $("dictateBtn");
+  if (!SR) {
+    btn.disabled = true;
+    btn.title = "Dictation not supported in this browser";
+    return;
+  }
+  const rec = new SR();
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.lang = document.documentElement.lang || "en-US";
+  state.recognition = rec;
+  rec.onresult = (ev) => {
+    const text = [...ev.results].map((r) => r[0].transcript).join("");
+    $("queryInput").value = text.trim();
+  };
+  rec.onend = () => {
+    state.dictating = false;
+    btn.classList.remove("on");
+  };
+  rec.onerror = () => {
+    state.dictating = false;
+    btn.classList.remove("on");
+  };
+  btn.onclick = () => {
+    if (state.dictating) {
+      rec.stop();
+      return;
+    }
+    try {
+      rec.start();
+      state.dictating = true;
+      btn.classList.add("on");
+    } catch {
+      setComposerHint("Could not start dictation.");
+    }
+  };
+}
+
+function bindSignalCard() {
+  const card = $("signalCard");
+  const handle = $("sigDrag");
+  const stage = $("stage");
+  let drag = null;
+
+  const onMove = (e) => {
+    if (!drag) return;
+    const rect = stage.getBoundingClientRect();
+    const x = e.clientX - rect.left - drag.ox;
+    const y = e.clientY - rect.top - drag.oy;
+    card.style.left = `${Math.max(0, Math.min(x, rect.width - card.offsetWidth))}px`;
+    card.style.top = `${Math.max(0, Math.min(y, rect.height - card.offsetHeight))}px`;
+  };
+
+  const onUp = () => {
+    drag = null;
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+  };
+
+  handle.onpointerdown = (e) => {
+    e.preventDefault();
+    const rect = card.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    drag = { ox: e.clientX - rect.left, oy: e.clientY - rect.top };
+    card.style.left = `${rect.left - stageRect.left}px`;
+    card.style.top = `${rect.top - stageRect.top}px`;
+    card.style.transform = "none";
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  $("sigMin").onclick = () => {
+    card.classList.toggle("minimized");
+    if (card.classList.contains("minimized")) card.classList.remove("expanded");
+  };
+  $("sigExpand").onclick = () => {
+    card.classList.remove("minimized");
+    card.classList.toggle("expanded");
+  };
 }
 
 function stream(id, replay = false) {
@@ -635,7 +796,23 @@ async function boot() {
     state.defaultSeats = stored.defaultSeats;
   }
   renderSeats(state.defaultSeats);
+  setComposerMode(false);
+  if (STATIC || !state.writable) {
+    setComposerHint("Local room needed to run a sitting. Chrome preview only.");
+  } else {
+    setComposerHint("Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
+  }
   window.addEventListener("resize", layoutStage);
+  bindSignalCard();
+  bindDictate();
+
+  $("composer").onsubmit = submitQuery;
+  $("attachBtn").onclick = () => $("attachFiles").click();
+  $("attachFiles").onchange = () => {
+    state.attachments = [...state.attachments, ...$("attachFiles").files];
+    $("attachFiles").value = "";
+    renderAttachList();
+  };
 
   $("guideBtn").onclick = () => $("guide").showModal();
   $("guideClose").onclick = () => $("guide").close();
