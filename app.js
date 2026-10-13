@@ -1,6 +1,33 @@
 const $ = (id) => document.getElementById(id);
 const STATIC = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-const state = { seats: [], byKey: {}, current: null, es: null, queue: [], playing: false, replay: false };
+const SHAPES = ["base", "open", "mid", "blink"];
+const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signal"];
+const TABLE_STORE = "silver-board-table";
+
+const state = {
+  seats: [],
+  byKey: {},
+  archetypes: [],
+  chairKey: "dalio",
+  defaultSeats: [],
+  current: null,
+  es: null,
+  queue: [],
+  playing: false,
+  replay: false,
+  speed: 1,
+  skip: false,
+  speaking: null,
+  talkTimer: null,
+  blinkTimer: null,
+  geo: {},
+  writable: false,
+  disclaimer: "",
+};
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
 
 function dataUrl(p) {
   if (!STATIC) return p;
@@ -8,19 +35,29 @@ function dataUrl(p) {
   if (p === "/api/sessions") return "data/sessions.json";
   const m = String(p).match(/^\/api\/sessions\/(.+)$/);
   if (m) return `data/sessions/${m[1]}.json`;
+  const adv = String(p).match(/^\/api\/advisor\/(.+)$/);
+  if (adv) return `data/advisors/${adv[1]}.json`;
   return p;
 }
 
-async function api(p) {
-  const r = await fetch(dataUrl(p));
-  if (!r.ok) throw new Error(`${p} ${r.status}`);
+async function api(p, opts) {
+  const r = await fetch(dataUrl(p), opts);
+  if (!r.ok) {
+    let msg = `${p} ${r.status}`;
+    try {
+      const j = await r.json();
+      if (j.error) msg = j.error;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  if (r.status === 204) return {};
   return r.json();
 }
 
-function place(i, n, inner = false) {
-  const r = inner ? 28 : 38;
-  const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-  return { left: `${50 + Math.cos(a) * r}%`, top: `${50 + Math.sin(a) * r}%` };
+function avatarUrl(key, shape = "base") {
+  return `${STATIC ? "" : "/"}avatars/${key}-${shape}.webp`;
 }
 
 function stanceClass(stance) {
@@ -30,35 +67,146 @@ function stanceClass(stance) {
   return "stance-mid";
 }
 
+function tableOrder(keys) {
+  const chair = state.chairKey || "dalio";
+  const rest = (keys || []).filter((k) => k !== chair);
+  const mid = Math.floor(rest.length / 2);
+  return [...rest.slice(0, mid), chair, ...rest.slice(mid)];
+}
+
+function bustHtml(s) {
+  const imgs = SHAPES.map((sh) => `<img class="${sh}" src="${esc(avatarUrl(s.key, sh))}" alt="" draggable="false">`).join("");
+  return `<div class="think" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="bust" data-shape="base" style="--seat:${esc(s.color || "#c5cdd8")}">
+      ${imgs}
+      <div class="bust-fallback" aria-hidden="true">
+        <i class="shoulders"></i><i class="head"></i><b>${esc(s.initials || "?")}</b>
+      </div>
+    </div>`;
+}
+
+function bindArt(root) {
+  for (const bust of root.querySelectorAll(".bust")) {
+    const base = bust.querySelector("img.base");
+    if (!base) continue;
+    const ok = () => bust.classList.add("has-art");
+    if (base.complete && base.naturalWidth) ok();
+    else base.addEventListener("load", ok, { once: true });
+    base.addEventListener("error", () => base.remove(), { once: true });
+    for (const img of bust.querySelectorAll("img:not(.base)")) {
+      img.addEventListener("error", () => img.remove(), { once: true });
+    }
+  }
+}
+
 function renderSeats(keys) {
+  state.seats = tableOrder(keys);
   const box = $("seats");
-  const list = $("seatList");
+  const plates = $("plates");
   box.innerHTML = "";
-  list.innerHTML = "";
-  keys.forEach((key, i) => {
-    const s = state.byKey[key] || { key, short: key, initials: "?", color: "#c5cdd8" };
+  plates.innerHTML = "";
+  state.seats.forEach((key) => {
+    const s = state.byKey[key] || { key, short: key, initials: "?", color: "#c5cdd8", name: key };
+    const chair = key === state.chairKey;
     const el = document.createElement("div");
-    el.className = "seat";
+    el.className = `seat${chair ? " chair-seat" : ""}`;
     el.id = `seat-${key}`;
     el.dataset.key = key;
-    Object.assign(el.style, place(i, keys.length));
-    el.innerHTML = `<div class="av" style="border-color:${s.color};color:${s.color}">${s.initials}</div><div class="nm">${s.short}</div>`;
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-label", `${s.name || s.short}, ${s.pillar || ""}. Open card.`);
+    el.innerHTML = bustHtml(s);
     box.appendChild(el);
-    const li = document.createElement("li");
-    li.id = `rail-${key}`;
-    li.dataset.key = key;
-    li.innerHTML = `<span class="rail-dot"></span><span class="rail-name">${s.short}</span><span class="rail-meta">${s.pillar || s.archetype || ""}</span>`;
-    list.appendChild(li);
+    const pl = document.createElement("div");
+    pl.className = `nameplate${chair ? " chair" : ""}`;
+    pl.id = `plate-${key}`;
+    pl.dataset.key = key;
+    pl.innerHTML = `<b>${esc(chair ? "Chair" : s.short)}</b><small>${esc(s.pillar || s.archetype || "")}</small>`;
+    plates.appendChild(pl);
   });
-  const chair = state.byKey.dalio;
-  if (chair) {
-    const c = document.createElement("div");
-    c.className = "seat chair-seat";
-    c.id = "seat-dalio";
-    c.dataset.key = "dalio";
-    Object.assign(c.style, { left: "50%", top: "14%" });
-    c.innerHTML = `<div class="av chair-av" style="border-color:${chair.color};color:${chair.color}">${chair.initials}</div><div class="nm">Chair</div>`;
-    box.appendChild(c);
+  bindArt(box);
+  layoutStage();
+}
+
+function layoutStage() {
+  const stage = $("stage");
+  if (!stage || !state.seats.length) return;
+  const W = stage.clientWidth;
+  const narrow = matchMedia("(max-width: 820px)").matches;
+  const H = narrow ? Math.round(W * 0.62) : stage.clientHeight;
+  const cx = W / 2;
+  const cy = H * (narrow ? 0.98 : 0.9);
+  const rx = W * 0.48;
+  const ry = H * (narrow ? 0.46 : 0.42);
+  const t = $("table");
+  Object.assign(t.style, { left: `${cx - rx}px`, top: `${cy - ry}px`, width: `${rx * 2}px`, height: `${ry * 2}px` });
+  const edge = (x) => cy - ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2));
+  const n = state.seats.length;
+  state.seats.forEach((key, i) => {
+    const x = W * (0.1 + (0.8 * i) / Math.max(n - 1, 1));
+    const d = ((x - cx) / rx) ** 2;
+    const size = H * (narrow ? 0.48 + 0.08 * d : 0.36 + 0.07 * d);
+    const bottom = edge(x) + size * 0.2;
+    const el = $(`seat-${key}`);
+    if (!el) return;
+    Object.assign(el.style, {
+      left: `${x - size / 2}px`,
+      top: `${bottom - size}px`,
+      width: `${size}px`,
+      height: `${size}px`,
+      zIndex: 10 + Math.round(d * 10),
+    });
+    const pl = $(`plate-${key}`);
+    if (pl) {
+      pl.style.left = `${x}px`;
+      pl.style.top = `${edge(x) + H * 0.01}px`;
+    }
+    state.geo[key] = { x, head: bottom - size * 0.72, size };
+  });
+  const c = $("center");
+  if (narrow) {
+    Object.assign(c.style, { left: "", top: "", width: "", height: "" });
+  } else {
+    const top = H * 0.48;
+    Object.assign(c.style, { left: `${W * 0.2}px`, width: `${W * 0.6}px`, top: `${top}px`, height: `${H - top - H * 0.1}px` });
+  }
+  if (state.speaking) moveSpot(state.speaking);
+}
+
+function moveSpot(key) {
+  const g = state.geo[key];
+  const spot = $("spot");
+  if (!g) {
+    spot.classList.remove("on");
+    return;
+  }
+  spot.style.left = `${g.x}px`;
+  spot.style.top = `${g.head}px`;
+  spot.style.width = spot.style.height = `${g.size * 1.9}px`;
+  spot.classList.add("on");
+}
+
+function stopTalk() {
+  clearInterval(state.talkTimer);
+  clearInterval(state.blinkTimer);
+  state.talkTimer = state.blinkTimer = null;
+  for (const bust of document.querySelectorAll(".bust")) bust.dataset.shape = "base";
+}
+
+function markSpeaking(seat) {
+  state.speaking = seat;
+  $("stage").classList.add("live");
+  for (const el of document.querySelectorAll(".seat")) el.classList.toggle("speaking", el.dataset.key === seat);
+  for (const el of document.querySelectorAll(".nameplate")) el.classList.toggle("speaking", el.dataset.key === seat);
+  moveSpot(seat);
+  stopTalk();
+  const bust = document.querySelector(`#seat-${seat} .bust`);
+  if (bust?.classList.contains("has-art")) {
+    let i = 0;
+    const cycle = ["open", "mid", "open", "base"];
+    state.talkTimer = setInterval(() => {
+      bust.dataset.shape = cycle[i++ % cycle.length];
+    }, 180);
   }
 }
 
@@ -67,19 +215,11 @@ function setStep(step, label) {
     li.classList.toggle("on", li.dataset.step === step);
     li.classList.toggle("done", stepOrder.indexOf(li.dataset.step) < stepOrder.indexOf(step));
   }
-  if (label && $("phaseLabel")) $("phaseLabel").textContent = label;
 }
 
-const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signal"];
-
-function markSpeaking(seat) {
-  for (const el of document.querySelectorAll(".seat")) el.classList.remove("speaking");
-  const node = $(`seat-${seat}`);
-  if (node) node.classList.add("speaking");
-  for (const li of document.querySelectorAll("#seatList li")) {
-    li.classList.toggle("active", li.dataset.key === seat);
-    if (li.dataset.key === seat) li.classList.add("spoken");
-  }
+function firstLine(text) {
+  const m = String(text || "").match(/THE CALL:\s*(.+)/i);
+  return m ? m[1].trim() : String(text || "").slice(0, 220);
 }
 
 function formatSpeech(ev) {
@@ -91,20 +231,28 @@ function formatSpeech(ev) {
   return { headline, sub, badge, tag, ruin: p.ruin, flag: p.flag };
 }
 
-function firstLine(text) {
-  const m = String(text || "").match(/THE CALL:\s*(.+)/i);
-  return m ? m[1].trim() : String(text || "").slice(0, 220);
+function capAvatar(s) {
+  const wrap = $("capAv");
+  wrap.innerHTML = "";
+  wrap.style.borderColor = s.color || "#c5cdd8";
+  wrap.style.color = s.color || "#c5cdd8";
+  const img = document.createElement("img");
+  img.src = avatarUrl(s.key);
+  img.alt = "";
+  img.onerror = () => {
+    img.remove();
+    wrap.textContent = s.initials || "?";
+  };
+  wrap.appendChild(img);
 }
 
 function showCaption(seat, ev) {
   $("waiting").hidden = true;
   $("signalCard").hidden = true;
   $("caption").hidden = false;
-  const s = state.byKey[seat] || { initials: "?", short: seat, color: "#c5cdd8" };
+  const s = state.byKey[seat] || { initials: "?", short: seat, color: "#c5cdd8", key: seat };
   const f = typeof ev === "string" ? { headline: ev, sub: "", badge: "", tag: "" } : formatSpeech(ev);
-  $("capAv").textContent = s.initials;
-  $("capAv").style.borderColor = s.color;
-  $("capAv").style.color = s.color;
+  capAvatar(s);
   $("capWho").textContent = s.short || s.name || seat;
   $("capTag").textContent = f.tag || "";
   $("capBody").innerHTML = "";
@@ -132,13 +280,29 @@ function showCaption(seat, ev) {
     $("capBody").appendChild(fl);
   }
   markSpeaking(seat);
+  pushFeed(seat, f);
+}
+
+function pushFeed(seat, f) {
+  const empty = $("feedEmpty");
+  if (empty) empty.remove();
+  const s = state.byKey[seat] || { short: seat, key: seat };
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "feed-card";
+  card.dataset.key = seat;
+  card.innerHTML = `<div class="h"><span>${esc(s.short || seat)}</span><span class="r">${esc(f.tag || f.badge || "")}</span></div><p>${esc(f.headline)}</p>`;
+  $("feed").prepend(card);
 }
 
 function showSignal(sig) {
   $("waiting").hidden = true;
   $("caption").hidden = true;
   $("signalCard").hidden = false;
-  for (const el of document.querySelectorAll(".seat")) el.classList.remove("speaking");
+  $("stage").classList.remove("live");
+  stopTalk();
+  $("spot").classList.remove("on");
+  for (const el of document.querySelectorAll(".seat, .nameplate")) el.classList.remove("speaking");
   const s = sig.signal || sig;
   $("sigLabel").textContent = s.label || "SIGNAL";
   $("sigOption").textContent = s.option ? `Option ${s.option}` : "";
@@ -149,101 +313,117 @@ function showSignal(sig) {
   if (s.conditions?.length) extras.push(["Conditions", s.conditions]);
   if (s.unresolved?.quote) extras.push(["Hold-out", [`${state.byKey[s.unresolved.seat]?.short || s.unresolved.seat}: ${s.unresolved.quote}`]]);
   if (s.next_steps?.length) {
-    const steps = s.next_steps.map((n) => (typeof n === "string" ? n : `${n.when}: ${n.action}`));
-    extras.push(["Next", steps]);
+    extras.push(["Next", s.next_steps.map((n) => (typeof n === "string" ? n : `${n.when}: ${n.action}`))]);
   }
   const foot = [];
   if (s.cheapest_test) foot.push(`Test: ${s.cheapest_test}`);
   if (s.kill_criteria) foot.push(`Kill: ${s.kill_criteria}`);
   if (s.disclaimer) foot.push(s.disclaimer);
-  const box = $("sigExtras");
-  box.innerHTML = extras
-    .map(
-      ([title, items]) =>
-        `<div class="sig-block"><div class="sig-block-title">${title}</div><ul>${items.map((i) => `<li>${i}</li>`).join("")}</ul></div>`
-    )
+  $("sigExtras").innerHTML = extras
+    .map(([title, items]) => `<div class="sig-block"><div class="sig-block-title">${esc(title)}</div><ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`)
     .join("");
   $("sigFoot").textContent = foot.join(" · ");
-  setStep("signal", "The Board speaks");
+  setStep("signal");
 }
 
 function applySetup(d) {
   $("topic").hidden = false;
   $("topicTitle").textContent = d.title || d.decision || "Sitting";
-  $("options").innerHTML = (d.options || []).map((o) => `<span class="opt">${o.id}: ${o.label}</span>`).join("");
-  renderSeats(d.seats || []);
-  setStep("opening", "Frame set");
+  $("options").innerHTML = (d.options || []).map((o) => `<span class="opt">${esc(o.id)}: ${esc(o.label)}</span>`).join("");
+  if (d.chair) state.chairKey = d.chair;
+  renderSeats(d.seats || state.defaultSeats);
+  setStep("opening");
 }
 
 function renderTensions(ev) {
   const lines = (ev.tensions || [])
     .map(
       (t) =>
-        `<div class="tension-item"><div class="tension-q">${t.question}</div>${(t.sides || [])
-          .map((s) => `<div class="tension-side"><span class="tension-pos">${s.position}</span><span class="tension-seats">${(s.seats || []).map((k) => state.byKey[k]?.short || k).join(", ")}</span></div>`)
+        `<div class="tension-item"><div class="tension-q">${esc(t.question)}</div>${(t.sides || [])
+          .map(
+            (s) =>
+              `<div class="tension-side"><span class="tension-pos">${esc(s.position)}</span><span class="tension-seats">${esc((s.seats || []).map((k) => state.byKey[k]?.short || k).join(", "))}</span></div>`
+          )
           .join("")}</div>`
     )
     .join("");
-  $("tensionBox").innerHTML = lines || `<p class="muted">${ev.note || "Tensions named."}</p>`;
-  if (ev.note && lines) $("tensionBox").insertAdjacentHTML("beforeend", `<p class="tension-note">${ev.note}</p>`);
+  $("tensionBox").innerHTML = lines || `<p class="muted">${esc(ev.note || "Tensions named.")}</p>`;
+  if (ev.note && lines) {
+    const n = document.createElement("p");
+    n.className = "tension-note";
+    n.textContent = ev.note;
+    $("tensionBox").appendChild(n);
+  }
 }
 
 function onEvent(ev) {
   if (ev.type === "setup") applySetup(ev);
   if (ev.type === "phase") {
     const map = { opening: "opening", tensions: "tensions", synthesis: "synthesis", ratify: "ratify", signal: "signal" };
-    if (map[ev.phase]) setStep(map[ev.phase], ev.label || "");
+    if (map[ev.phase]) setStep(map[ev.phase]);
   }
   if (ev.type === "seat_done") showCaption(ev.seat, ev);
   if (ev.type === "tensions") {
     renderTensions(ev);
-    setStep("tensions", "Tensions named");
+    setStep("tensions");
   }
   if (ev.type === "draft") {
-    setStep("synthesis", "Silver Pill synthesis");
-    showCaption("dalio", { parsed: { call: ev.draft?.signal || "Synthesising…" }, text: "" });
+    setStep("synthesis");
+    showCaption(state.chairKey || "dalio", { parsed: { call: ev.draft?.signal || "Synthesising…" }, text: "" });
   }
   if (ev.type === "signal") showSignal(ev);
   if (ev.type === "end") state.playing = false;
 }
 
-function enqueueEvents(events, replay = false) {
-  state.queue = events.filter((e) => e.type !== "end");
-  state.replay = replay;
-  if (!state.playing) drainQueue();
+function delayFor(ev) {
+  if (state.skip) return 0;
+  const base = ev.type === "seat_done" ? 1400 : ev.type === "phase" ? 600 : 400;
+  return state.replay ? base / state.speed : 0;
 }
 
 function drainQueue() {
   if (!state.queue.length) {
     state.playing = false;
+    $("playbar").hidden = !state.replay;
+    $("queueInfo").textContent = state.replay ? "Replay done" : "";
     return;
   }
   state.playing = true;
+  $("playbar").hidden = false;
+  $("queueInfo").textContent = `${state.queue.length} left`;
   const ev = state.queue.shift();
   onEvent(ev);
-  const delay = state.replay ? (ev.type === "seat_done" ? 1400 : ev.type === "phase" ? 600 : 400) : 0;
-  setTimeout(drainQueue, delay);
+  setTimeout(drainQueue, delayFor(ev));
+}
+
+function enqueueEvents(events, replay = false) {
+  state.queue = events.filter((e) => e.type !== "end");
+  state.replay = replay;
+  state.skip = false;
+  if (!state.playing) drainQueue();
 }
 
 function resetStage() {
-  if (state.es) state.es.close();
-  state.queue = [];
-  state.playing = false;
+  stopTalk();
+  $("stage").classList.remove("live");
+  $("spot").classList.remove("on");
   $("waiting").hidden = false;
   $("caption").hidden = true;
   $("signalCard").hidden = true;
   $("topic").hidden = true;
   $("tensionBox").innerHTML = '<span class="muted">Waiting for the field.</span>';
+  $("feed").innerHTML = '<div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>';
   for (const li of $("stepper").querySelectorAll("li")) li.classList.remove("on", "done");
-  for (const li of document.querySelectorAll("#seatList li")) li.classList.remove("active", "spoken");
 }
 
-async function stream(id, replay = false) {
-  resetStage();
+function stream(id, replay = false) {
+  if (state.es) state.es.close();
   state.current = id;
+  state.queue = [];
+  state.playing = false;
+  resetStage();
   if (STATIC) {
-    const s = await api(`/api/sessions/${id}`);
-    enqueueEvents(s.events || [], true);
+    api(`/api/sessions/${id}`).then((data) => enqueueEvents(data.events || [], true));
     return;
   }
   const es = new EventSource(`/api/stream/${encodeURIComponent(id)}`);
@@ -266,55 +446,239 @@ async function stream(id, replay = false) {
   };
 }
 
+function openCard(key) {
+  const s = state.byKey[key];
+  if (!s) return;
+  const body = $("cardBody");
+  body.innerHTML = `<div class="card-head">
+      <span class="av">${esc(s.initials)}</span>
+      <div><div class="label">${esc(s.pillar || "")}</div><h3 style="margin:0.15rem 0">${esc(s.name)}</h3>
+      <p class="muted" style="margin:0">Owns: ${esc(s.question || "")}</p></div>
+    </div>
+    <p>${esc(s.dimension || "")}</p>
+    <p class="muted">Simulation. Not ${esc(s.name)}. ${key === "stark" ? "Fictional seat." : ""}</p>
+    <p><button class="ghost" type="button" data-edit="${esc(key)}">Edit knowledge</button></p>`;
+  const av = body.querySelector(".av");
+  const img = document.createElement("img");
+  img.src = avatarUrl(key);
+  img.alt = "";
+  img.onload = () => {
+    av.textContent = "";
+    av.appendChild(img);
+  };
+  $("cardDialog").showModal();
+  body.querySelector("[data-edit]")?.addEventListener("click", () => {
+    $("cardDialog").close();
+    openEditor(key);
+  });
+}
+
+function fillCompose() {
+  const grid = $("composeGrid");
+  const chair = state.chairKey;
+  const seated = state.defaultSeats.filter((k) => k !== chair);
+  const arch = state.archetypes.length ? state.archetypes : [{ id: "seat", name: "Seat" }];
+  const options = (selected) =>
+    Object.values(state.byKey)
+      .map((a) => `<option value="${esc(a.key)}" ${a.key === selected ? "selected" : ""}>${esc(a.short)} — ${esc(a.pillar || a.archetype)}</option>`)
+      .join("");
+  grid.innerHTML = `<label>Chair <select id="slot-chair">${options(chair)}</select></label>` +
+    arch
+      .map((a, i) => {
+        const current = seated.find((k) => state.byKey[k]?.archetype === a.id) || seated[i] || seated[0];
+        return `<label>${esc(a.name)} <select data-arch="${esc(a.id)}">${options(current)}</select></label>`;
+      })
+      .join("");
+  $("composeNote").textContent = STATIC
+    ? "GitHub Pages is a snapshot. Seating here is preview-only. To save brains, run the room locally (npm start)."
+    : "Six seats plus the Chair. Saving writes board/roster.json and keeps one voice (Charter Art. 1).";
+}
+
+async function saveTable() {
+  const chair = $("slot-chair").value;
+  const picks = [...document.querySelectorAll("#composeGrid select[data-arch]")].map((s) => s.value);
+  const defaultSeats = [...new Set(picks.filter((k) => k !== chair))];
+  $("saveMsg").hidden = false;
+  try {
+    if (STATIC || !state.writable) {
+      localStorage.setItem(TABLE_STORE, JSON.stringify({ chairKey: chair, defaultSeats }));
+      $("saveMsg").textContent = "Preview saved in this browser. Local room needed to persist the roster.";
+    } else {
+      await api("/api/table", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ chairKey: chair, defaultSeats }),
+      });
+      $("saveMsg").textContent = "Table written. Next /silver-board sitting uses these seats unless you pass --seats.";
+    }
+    state.chairKey = chair;
+    state.defaultSeats = defaultSeats;
+    renderSeats(defaultSeats);
+  } catch (e) {
+    $("saveMsg").textContent = String(e.message || e);
+  }
+}
+
+function populateArch() {
+  $("archSelect").innerHTML = state.archetypes.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("");
+}
+
+async function openEditor(key, isNew = false) {
+  const form = $("editorForm");
+  form.reset();
+  form.dataset.create = isNew ? "1" : "0";
+  $("editorTitle").textContent = isNew ? "Add a member" : "Edit member";
+  form.key.readOnly = !isNew;
+  populateArch();
+  $("editorMsg").hidden = true;
+  if (!isNew && key) {
+    form.key.value = key;
+    try {
+      const data = STATIC ? { advisor: state.byKey[key], hot: "", sources: "" } : await api(`/api/advisor/${encodeURIComponent(key)}`);
+      const a = data.advisor || state.byKey[key];
+      form.name.value = a.name || "";
+      form.short.value = a.short || "";
+      form.initials.value = a.initials || "";
+      form.slug.value = a.slug || "";
+      form.archetype.value = a.archetype || "";
+      form.pillar.value = a.pillar || "";
+      form.color.value = a.color || "#c5cdd8";
+      form.question.value = a.question || "";
+      form.dimension.value = a.dimension || "";
+      form.hot.value = data.hot || "";
+      form.sources.value = data.sources || "";
+      if (STATIC) {
+        $("editorMsg").hidden = false;
+        $("editorMsg").textContent = "Knowledge files are not on GitHub Pages. Run npm start to edit _hot.md.";
+      }
+    } catch (e) {
+      $("editorMsg").hidden = false;
+      $("editorMsg").textContent = String(e.message || e);
+    }
+  }
+  $("editor").showModal();
+}
+
+async function saveMember(ev) {
+  ev.preventDefault();
+  const form = $("editorForm");
+  const create = form.dataset.create === "1";
+  const body = {
+    key: form.key.value.trim(),
+    name: form.name.value.trim(),
+    short: form.short.value.trim(),
+    initials: form.initials.value.trim(),
+    slug: form.slug.value.trim(),
+    archetype: form.archetype.value,
+    pillar: form.pillar.value.trim(),
+    color: form.color.value,
+    question: form.question.value.trim(),
+    dimension: form.dimension.value.trim(),
+    hot: form.hot.value,
+    sources: form.sources.value,
+  };
+  $("editorMsg").hidden = false;
+  if (STATIC || !state.writable) {
+    $("editorMsg").textContent = "Cannot write brains on GitHub Pages. Clone the private repo and npm start.";
+    return;
+  }
+  try {
+    const path = create ? "/api/advisor" : `/api/advisor/${encodeURIComponent(body.key)}`;
+    const saved = await api(path, {
+      method: create ? "POST" : "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const a = saved.advisor;
+    state.byKey[a.key] = a;
+    $("editorMsg").textContent = `Saved ${a.short}. Brain at .claude/skills/silver-board/brains/${a.slug}/`;
+    fillCompose();
+  } catch (e) {
+    $("editorMsg").textContent = String(e.message || e);
+  }
+}
+
+function onStageClick(e) {
+  const seat = e.target.closest(".seat, .nameplate, .feed-card");
+  if (!seat?.dataset.key) return;
+  openCard(seat.dataset.key);
+}
+
+async function openHistory() {
+  const data = await api("/api/sessions");
+  $("historyList").innerHTML =
+    (data.sessions || [])
+      .map((s) => `<li><button class="ghost replay" data-id="${esc(s.id)}" type="button">${esc(s.title || s.id)}</button> <span class="muted">${esc(s.status)}</span></li>`)
+      .join("") || "<li class='muted'>None yet</li>";
+  $("history").showModal();
+}
+
 async function boot() {
   const seats = await api("/api/seats");
   state.byKey = Object.fromEntries((seats.advisors || []).map((a) => [a.key, a]));
-  renderSeats(seats.defaultSeats || []);
-
-  if (STATIC) {
-    const wait = $("waiting");
-    wait.querySelector("h2").textContent = "Watch a sitting";
-    wait.querySelector("p").textContent = "This public page is a static replay. Live sittings still run on your machine: npm start → http://localhost:7770.";
-    const code = wait.querySelector("code");
-    if (code) code.textContent = "Past sittings → replay the example";
+  state.archetypes = seats.archetypes || [];
+  state.chairKey = seats.chairKey || seats.chair?.key || "dalio";
+  state.defaultSeats = seats.defaultSeats || [];
+  state.writable = !!seats.writable && !STATIC;
+  if (seats.disclaimer) {
+    $("disclaimer").textContent = seats.disclaimer;
   }
+  const stored = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(TABLE_STORE) || "null");
+    } catch {
+      return null;
+    }
+  })();
+  if (stored?.defaultSeats?.length) {
+    state.chairKey = stored.chairKey || state.chairKey;
+    state.defaultSeats = stored.defaultSeats;
+  }
+  renderSeats(state.defaultSeats);
+  window.addEventListener("resize", layoutStage);
 
   $("guideBtn").onclick = () => $("guide").showModal();
   $("guideClose").onclick = () => $("guide").close();
   $("historyClose").onclick = () => $("history").close();
-  $("historyBtn").onclick = async () => {
-    const data = await api("/api/sessions");
-    $("historyList").innerHTML =
-      (data.sessions || [])
-        .map(
-          (s) =>
-            `<li><button class="ghost replay" data-id="${s.id}">${s.title || s.id}</button> <span class="muted">${s.status}</span></li>`
-        )
-        .join("") || "<li class='muted'>None yet</li>";
-    $("history").showModal();
-    $("historyList").onclick = (e) => {
-      const btn = e.target.closest("[data-id]");
-      if (!btn) return;
-      stream(btn.dataset.id, true);
-      $("history").close();
-    };
+  $("historyBtn").onclick = openHistory;
+  $("waitHistory").onclick = openHistory;
+  $("composeBtn").onclick = () => {
+    fillCompose();
+    $("saveMsg").hidden = true;
+    $("compose").showModal();
   };
+  $("waitCompose").onclick = $("composeBtn").onclick;
+  $("composeClose").onclick = () => $("compose").close();
+  $("saveTable").onclick = saveTable;
+  $("editMember").onclick = () => openEditor($("slot-chair")?.value || state.chairKey, false);
+  $("addMember").onclick = () => openEditor("", true);
+  $("editorClose").onclick = () => $("editor").close();
+  $("cardClose").onclick = () => $("cardDialog").close();
+  $("editorForm").onsubmit = saveMember;
+  $("stage").onclick = onStageClick;
+  $("feed").onclick = onStageClick;
+  $("skipBtn").onclick = () => {
+    state.skip = true;
+  };
+  $("playbar").querySelectorAll("[data-speed]").forEach((b) => {
+    b.onclick = () => {
+      state.speed = Number(b.dataset.speed);
+      $("playbar").querySelectorAll("[data-speed]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    };
+  });
 
   const sess = await api("/api/sessions");
-  if (STATIC) {
-    const demo = (sess.sessions || [])[0];
-    if (demo) stream(demo.id, true);
-    return;
-  }
   const live = sess.live || sess.running;
   if (live) stream(live, false);
+  else if (STATIC && sess.sessions?.[0]) stream(sess.sessions[0].id, true);
 
-  const tick = async () => {
-    if (state.current && state.playing) return;
-    const data = await api("/api/sessions");
-    if (data.live && data.live !== state.current) stream(data.live, false);
-  };
-  setInterval(tick, 2000);
+  if (!STATIC) {
+    setInterval(async () => {
+      if (state.current && state.playing) return;
+      const data = await api("/api/sessions");
+      if (data.live && data.live !== state.current) stream(data.live, false);
+    }, 2000);
+  }
 }
 
 boot().catch((e) => {

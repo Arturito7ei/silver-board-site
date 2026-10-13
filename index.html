@@ -15,18 +15,16 @@
         <div class="brand-sub">7Ei AG · intelligence field</div>
       </div>
     </div>
-    <div class="stepper-wrap">
-      <ol class="stepper" id="stepper" aria-label="Sitting progress">
-        <li data-step="setup">Frame</li>
-        <li data-step="opening">Field</li>
-        <li data-step="tensions">Tensions</li>
-        <li data-step="synthesis">Silver Pill</li>
-        <li data-step="ratify">Ratify</li>
-        <li data-step="signal">Signal</li>
-      </ol>
-      <div class="phase-label" id="phaseLabel" aria-live="polite"></div>
-    </div>
+    <ol class="stepper" id="stepper" aria-label="Sitting progress">
+      <li data-step="setup">Frame</li>
+      <li data-step="opening">Field</li>
+      <li data-step="tensions">Tensions</li>
+      <li data-step="synthesis">Silver Pill</li>
+      <li data-step="ratify">Ratify</li>
+      <li data-step="signal">Signal</li>
+    </ol>
     <div class="top-actions">
+      <button class="ghost" id="composeBtn" type="button">Compose table</button>
       <button class="ghost" id="guideBtn" type="button">How it works</button>
       <button class="ghost" id="historyBtn" type="button">Past sittings</button>
     </div>
@@ -43,15 +41,22 @@
   <main class="layout">
     <section class="stage-wrap" aria-label="The board table">
       <div class="stage" id="stage">
-        <div class="table" aria-hidden="true"></div>
-        <div class="table-etch" aria-hidden="true">SB</div>
+        <div class="wall" aria-hidden="true"></div>
+        <div class="spot" id="spot" aria-hidden="true"></div>
         <div id="seats"></div>
+        <div class="table" id="table" aria-hidden="true"><span class="etch">SB</span></div>
+        <div id="plates"></div>
+
         <div class="center" id="center">
           <div class="waiting" id="waiting">
             <p class="pulse">The room is open</p>
             <h2>Bring a decision to the Silver Board</h2>
             <p>In Claude Code, in this repo, type the line below. The field activates here as files land in <code>sessions/</code>.</p>
             <code>/silver-board should we …</code>
+            <div class="row">
+              <button class="ghost" type="button" id="waitCompose">Replace the seats</button>
+              <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
+            </div>
           </div>
           <div class="caption" id="caption" hidden>
             <div class="cap-head">
@@ -72,21 +77,36 @@
             <div id="sigFoot"></div>
           </div>
         </div>
+
+        <div class="playbar" id="playbar" hidden>
+          <span class="queue" id="queueInfo"></span>
+          <div class="speed" role="radiogroup" aria-label="Playback speed">
+            <button type="button" data-speed="1" aria-pressed="true">1x</button>
+            <button type="button" data-speed="1.6" aria-pressed="false">1.6x</button>
+            <button type="button" data-speed="2.5" aria-pressed="false">2.5x</button>
+          </div>
+          <button type="button" class="skip" id="skipBtn">Skip ahead</button>
+        </div>
       </div>
     </section>
-    <aside class="rail" id="rail">
-      <h3>Seats</h3>
-      <ul id="seatList"></ul>
-      <h3>Tensions</h3>
+
+    <aside class="panel" aria-label="Field notes">
+      <div class="panel-head" id="panelHead">Field</div>
+      <div class="tabpanel" id="feed">
+        <div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>
+      </div>
+      <h3 class="panel-sub">Tensions</h3>
       <div id="tensionBox" class="muted">Waiting for the field.</div>
     </aside>
   </main>
 
-  <dialog id="guide">
+  <p class="disclaimer" id="disclaimer">Simulated advisors. Not the people. No endorsement. Cartoon seats, not photographs.</p>
+
+  <dialog id="guide" class="card-dialog">
     <h2>How a sitting works</h2>
     <ol>
       <li>Frame the question with options, numbers, and your lean.</li>
-      <li>The Chair seats one advisor per archetype (plus Dalio as method).</li>
+      <li>Compose the table — one seat per archetype, plus Dalio as method Chair — or leave the default.</li>
       <li>The field speaks. Tensions are named, not scored as a roast.</li>
       <li>Silver Pill synthesis. The Board speaks with <em>one voice</em>.</li>
       <li>Advice, not a decision. Human override is absolute.</li>
@@ -95,10 +115,56 @@
     <button class="ghost" id="guideClose" type="button">Close</button>
   </dialog>
 
-  <dialog id="history">
+  <dialog id="history" class="card-dialog">
     <h2>Past sittings</h2>
+    <p class="muted">Replay exactly as the files landed.</p>
     <ul id="historyList"></ul>
     <button class="ghost" id="historyClose" type="button">Close</button>
+  </dialog>
+
+  <dialog id="cardDialog" class="card-dialog">
+    <div id="cardBody"></div>
+    <button class="ghost" id="cardClose" type="button">Close</button>
+  </dialog>
+
+  <dialog id="compose" class="card-dialog compose-dialog">
+    <h2>Compose the table</h2>
+    <p class="muted" id="composeNote">Six seats plus the Chair. One archetype each is the default. Saving writes <code>board/roster.json</code> on this machine.</p>
+    <div class="compose-grid" id="composeGrid"></div>
+    <div class="compose-row">
+      <button class="convene" id="saveTable" type="button">Seat this table</button>
+      <button class="ghost" id="editMember" type="button">Edit a member’s brain</button>
+      <button class="ghost" id="addMember" type="button">Add a member</button>
+      <button class="ghost" id="composeClose" type="button">Close</button>
+    </div>
+    <p class="save-msg" id="saveMsg" hidden></p>
+  </dialog>
+
+  <dialog id="editor" class="card-dialog compose-dialog">
+    <h2 id="editorTitle">Member</h2>
+    <form id="editorForm" class="editor">
+      <label>Key <input name="key" required pattern="[a-z][a-z0-9]{1,24}" placeholder="buffett"></label>
+      <label>Name <input name="name" required maxlength="80"></label>
+      <label>Short <input name="short" maxlength="24"></label>
+      <label>Initials <input name="initials" maxlength="4"></label>
+      <label>Slug <input name="slug" maxlength="48" placeholder="warren-buffett"></label>
+      <label>Archetype <select name="archetype" id="archSelect"></select></label>
+      <label>Pillar <input name="pillar" maxlength="80"></label>
+      <label>Colour <input name="color" type="color" value="#c5cdd8"></label>
+      <label class="wide">Question <input name="question" maxlength="240"></label>
+      <label class="wide">Dimension <input name="dimension" maxlength="160"></label>
+      <label class="wide">Knowledge base (<code>_hot.md</code>)
+        <textarea name="hot" rows="10" placeholder="Principles this seat will not drop. Numbered, sourced."></textarea>
+      </label>
+      <label class="wide">Sources (<code>sources.md</code>)
+        <textarea name="sources" rows="6" placeholder="Public sources. Not affiliated."></textarea>
+      </label>
+      <div class="compose-row">
+        <button class="convene" type="submit">Save member</button>
+        <button class="ghost" id="editorClose" type="button">Cancel</button>
+      </div>
+    </form>
+    <p class="save-msg" id="editorMsg" hidden></p>
   </dialog>
 
   <script src="app.js"></script>
