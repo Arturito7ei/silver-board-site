@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Silver Board · 7Ei</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">7</span>
+      <div>
+        <div class="brand-name">Silver Board</div>
+        <div class="brand-sub">7Ei AG · intelligence field</div>
+      </div>
+    </div>
+    <div class="stepper-wrap">
+      <ol class="stepper" id="stepper" aria-label="Sitting progress">
+        <li data-step="setup">Frame</li>
+        <li data-step="opening">Field</li>
+        <li data-step="tensions">Tensions</li>
+        <li data-step="synthesis">Silver Pill</li>
+        <li data-step="ratify">Ratify</li>
+        <li data-step="signal">Signal</li>
+      </ol>
+      <div class="phase-label" id="phaseLabel" aria-live="polite"></div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost" id="guideBtn" type="button">How it works</button>
+      <button class="ghost" id="historyBtn" type="button">Past sittings</button>
+    </div>
+  </header>
+
+  <div class="topic" id="topic" hidden>
+    <div class="topic-main">
+      <div class="label">On the table</div>
+      <h1 id="topicTitle"></h1>
+    </div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <main class="layout">
+    <section class="stage-wrap" aria-label="The board table">
+      <div class="stage" id="stage">
+        <div class="table" aria-hidden="true"></div>
+        <div class="table-etch" aria-hidden="true">SB</div>
+        <div id="seats"></div>
+        <div class="center" id="center">
+          <div class="waiting" id="waiting">
+            <p class="pulse">The room is open</p>
+            <h2>Bring a decision to the Silver Board</h2>
+            <p>In Claude Code, in this repo, type the line below. The field activates here as files land in <code>sessions/</code>.</p>
+            <code>/silver-board should we …</code>
+          </div>
+          <div class="caption" id="caption" hidden>
+            <div class="cap-head">
+              <span class="cap-av" id="capAv"></span>
+              <span class="cap-who" id="capWho"></span>
+              <span class="cap-tag" id="capTag"></span>
+            </div>
+            <div class="cap-body" id="capBody"></div>
+          </div>
+          <div class="signal-card" id="signalCard" hidden>
+            <div class="label">The Board speaks</div>
+            <div class="sig-head">
+              <div class="sig-label" id="sigLabel"></div>
+              <span class="sig-option" id="sigOption" hidden></span>
+            </div>
+            <p id="sigCall"></p>
+            <div id="sigExtras"></div>
+            <div id="sigFoot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <aside class="rail" id="rail">
+      <h3>Seats</h3>
+      <ul id="seatList"></ul>
+      <h3>Tensions</h3>
+      <div id="tensionBox" class="muted">Waiting for the field.</div>
+    </aside>
+  </main>
+
+  <dialog id="guide">
+    <h2>How a sitting works</h2>
+    <ol>
+      <li>Frame the question with options, numbers, and your lean.</li>
+      <li>The Chair seats one advisor per archetype (plus Dalio as method).</li>
+      <li>The field speaks. Tensions are named, not scored as a roast.</li>
+      <li>Silver Pill synthesis. The Board speaks with <em>one voice</em>.</li>
+      <li>Advice, not a decision. Human override is absolute.</li>
+    </ol>
+    <p class="muted">Simulated advisors. Not the people. No endorsement.</p>
+    <button class="ghost" id="guideClose" type="button">Close</button>
+  </dialog>
+
+  <dialog id="history">
+    <h2>Past sittings</h2>
+    <ul id="historyList"></ul>
+    <button class="ghost" id="historyClose" type="button">Close</button>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
