@@ -22,4 +22,6 @@ Photoreal xlsx historical / mythic (2026-10-13): `newton`, `adamsmith`, `hayek`,
 
 Seated roster is photoreal. No remaining cartoon seats.
 
+Alpha studio cut (2026-10-14): every seated `{key}-{base,blink,open,mid}.webp` is RGBA — studio backdrop removed so busts sit on the black stage. Painted table in the lower frame stays; CSS `.table` already covers it. No recast. No Gandalf.
+
 Held: Gandalf (still unseated — Thierry must name that seat), Saudi Aramco / PEMEX / Sinopec (organisations).

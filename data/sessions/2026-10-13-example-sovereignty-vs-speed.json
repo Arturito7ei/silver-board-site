@@ -89,7 +89,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 4,
       "round": 1,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Take the terrain (a used table) before arguing the campaign (MC Sprint 6).\nTHROUGH MY LENS:\n- Win without fighting: a file protocol already is the army; the room is the flag (S001).\n- Terrain: humans will not consult a vault note under pressure (S002).\n- Prolonged operations: parking until Sprint 6 is a long siege with no grain (S005).\nTHE TENSION I HOLD: A flag with no army is theatre; an army with no flag is invisible.\nWHAT WOULD CHANGE MY MIND: Proof that operators already convene the Board from the vault without being asked.\nQUESTION FOR THE CHAIR: Who will actually type /silver-board in the next fourteen days?",
@@ -105,7 +105,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 4,
       "round": 1,
       "seat": "bezos",
       "text": "SEAT: Bezos\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 4/10 · C 2/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: This is a two-way door. Ship the local room; reverse it if nobody sits.\nTHROUGH MY LENS:\n- Two-way door: a private Node viewer is reversible (S002).\n- Work backwards: the customer of the Board is Thierry under a hard call, not a slide (S001).\n- Day 1: waiting for MC is process as proxy (S004).\nTHE TENSION I HOLD: One-way would be public portraits and a hosted model. That is not what was asked.\nWHAT WOULD CHANGE MY MIND: A P01 requirement to send briefs to a third-party API.\nQUESTION FOR THE CHAIR: Are we inventing a product or installing a working backwards loop?",
@@ -254,7 +254,7 @@
     },
     {
       "type": "seat_done",
-      "t": 5,
+      "t": 6,
       "round": 2,
       "seat": "buffett",
       "text": "SEAT: Buffett\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 5/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Cheap, private, reversible.",
@@ -270,7 +270,7 @@
     },
     {
       "type": "seat_done",
-      "t": 5,
+      "t": 6,
       "round": 2,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nVOTE: Endorse\nOPTION SCORES: A 8/10 · B 4/10 · C 3/10\nONE LINE THE SIGNAL MUST NOT DROP: Take the terrain now.",
