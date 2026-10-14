@@ -32,6 +32,10 @@ function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+function displayName(s, fallback) {
+  return (s && (s.name || s.short)) || fallback || "";
+}
+
 function dataUrl(p) {
   if (!STATIC) return p;
   if (p === "/api/seats") return "data/seats.json";
@@ -117,14 +121,15 @@ function renderSeats(keys) {
     el.dataset.key = key;
     el.tabIndex = 0;
     el.setAttribute("role", "button");
-    el.setAttribute("aria-label", `${s.name || s.short}, ${s.pillar || ""}. Open card.`);
+    el.setAttribute("aria-label", `${displayName(s, key)}, ${s.pillar || ""}. Open card.`);
     el.innerHTML = bustHtml(s);
     box.appendChild(el);
     const pl = document.createElement("div");
     pl.className = `nameplate${chair ? " chair" : ""}`;
     pl.id = `plate-${key}`;
     pl.dataset.key = key;
-    pl.innerHTML = `<b>${esc(chair ? "Chair" : s.short)}</b><small>${esc(s.pillar || s.archetype || "")}</small>`;
+    const plateSub = chair ? ["Chair", s.pillar || s.archetype].filter(Boolean).join(" · ") : s.pillar || s.archetype || "";
+    pl.innerHTML = `<b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>`;
     plates.appendChild(pl);
   });
   bindArt(box);
@@ -256,7 +261,7 @@ function showCaption(seat, ev) {
   const s = state.byKey[seat] || { initials: "?", short: seat, color: "#c5cdd8", key: seat };
   const f = typeof ev === "string" ? { headline: ev, sub: "", badge: "", tag: "" } : formatSpeech(ev);
   capAvatar(s);
-  $("capWho").textContent = s.short || s.name || seat;
+  $("capWho").textContent = displayName(s, seat);
   $("capTag").textContent = f.tag || "";
   $("capBody").innerHTML = "";
   if (f.badge) {
@@ -294,7 +299,7 @@ function pushFeed(seat, f) {
   card.type = "button";
   card.className = "feed-card";
   card.dataset.key = seat;
-  card.innerHTML = `<div class="h"><span>${esc(s.short || seat)}</span><span class="r">${esc(f.tag || f.badge || "")}</span></div><p>${esc(f.headline)}</p>`;
+  card.innerHTML = `<div class="h"><span>${esc(displayName(s, seat))}</span><span class="r">${esc(f.tag || f.badge || "")}</span></div><p>${esc(f.headline)}</p>`;
   $("feed").prepend(card);
 }
 
@@ -323,7 +328,7 @@ function showSignal(sig) {
   const extras = [];
   if (s.tensions_resolved?.length) extras.push(["Resolved", s.tensions_resolved]);
   if (s.conditions?.length) extras.push(["Conditions", s.conditions]);
-  if (s.unresolved?.quote) extras.push(["Hold-out", [`${state.byKey[s.unresolved.seat]?.short || s.unresolved.seat}: ${s.unresolved.quote}`]]);
+  if (s.unresolved?.quote) extras.push(["Hold-out", [`${displayName(state.byKey[s.unresolved.seat], s.unresolved.seat)}: ${s.unresolved.quote}`]]);
   if (s.next_steps?.length) {
     extras.push(["Next", s.next_steps.map((n) => (typeof n === "string" ? n : `${n.when}: ${n.action}`))]);
   }
@@ -354,7 +359,7 @@ function renderTensions(ev) {
         `<div class="tension-item"><div class="tension-q">${esc(t.question)}</div>${(t.sides || [])
           .map(
             (s) =>
-              `<div class="tension-side"><span class="tension-pos">${esc(s.position)}</span><span class="tension-seats">${esc((s.seats || []).map((k) => state.byKey[k]?.short || k).join(", "))}</span></div>`
+              `<div class="tension-side"><span class="tension-pos">${esc(s.position)}</span><span class="tension-seats">${esc((s.seats || []).map((k) => displayName(state.byKey[k], k)).join(", "))}</span></div>`
           )
           .join("")}</div>`
     )
@@ -641,7 +646,7 @@ function fillCompose() {
   const arch = state.archetypes.length ? state.archetypes : [{ id: "seat", name: "Seat" }];
   const options = (selected) =>
     Object.values(state.byKey)
-      .map((a) => `<option value="${esc(a.key)}" ${a.key === selected ? "selected" : ""}>${esc(a.short)} — ${esc(a.pillar || a.archetype)}</option>`)
+      .map((a) => `<option value="${esc(a.key)}" ${a.key === selected ? "selected" : ""}>${esc(displayName(a, a.key))} — ${esc(a.pillar || a.archetype)}</option>`)
       .join("");
   grid.innerHTML = `<label>Chair <select id="slot-chair">${options(chair)}</select></label>` +
     arch
@@ -752,7 +757,7 @@ async function saveMember(ev) {
     });
     const a = saved.advisor;
     state.byKey[a.key] = a;
-    $("editorMsg").textContent = `Saved ${a.short}. Brain at .claude/skills/silver-board/brains/${a.slug}/`;
+    $("editorMsg").textContent = `Saved ${displayName(a, a.key)}. Brain at .claude/skills/silver-board/brains/${a.slug}/`;
     fillCompose();
   } catch (e) {
     $("editorMsg").textContent = String(e.message || e);

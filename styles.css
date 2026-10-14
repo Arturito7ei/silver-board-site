@@ -234,13 +234,13 @@ code {
 .nameplate {
   position: absolute; z-index: 32; translate: -50% -50%; text-align: center; cursor: pointer;
   background: rgba(8, 10, 14, 0.88); border: 1px solid var(--line-strong); border-radius: 10px;
-  padding: 5px 10px 6px; min-width: 5.8rem; backdrop-filter: blur(6px);
+  padding: 5px 8px 6px; min-width: 6.2rem; max-width: 9.6rem; backdrop-filter: blur(6px);
 }
-.nameplate b { display: block; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
-.nameplate small { display: block; font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+.nameplate b { display: block; font-size: 0.72rem; line-height: 1.2; color: var(--ink); white-space: normal; }
+.nameplate small { display: block; font-size: 0.65rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nameplate.speaking { border-color: var(--gold); }
 .nameplate.chair { border-style: dashed; color: var(--gold); }
-.nameplate.chair b { color: var(--gold); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem; }
+.nameplate.chair b { color: var(--gold); letter-spacing: 0.02em; text-transform: none; font-size: 0.72rem; }
 
 .center {
   position: absolute; z-index: 36; display: grid; place-items: start center;
