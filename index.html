@@ -7,122 +7,155 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" role="img" aria-label="7Ei"><path d="M43.5 8.74 56.5 8.74 63 20 56.5 31.26 43.5 31.26 37 20Z"/><path d="M17.52 23.74 30.52 23.74 37.02 35 30.52 46.26 17.52 46.26 11.02 35Z"/><path d="M69.48 23.74 82.48 23.74 88.98 35 82.48 46.26 69.48 46.26 62.98 35Z"/><path d="M43.5 38.74 56.5 38.74 63 50 56.5 61.26 43.5 61.26 37 50Z"/><path d="M17.52 53.74 30.52 53.74 37.02 65 30.52 76.26 17.52 76.26 11.02 65Z"/><path d="M69.48 53.74 82.48 53.74 88.98 65 82.48 76.26 69.48 76.26 62.98 65Z"/><path d="M43.5 68.74 56.5 68.74 63 80 56.5 91.26 43.5 91.26 37 80Z"/></svg></span>
-      <div>
-        <div class="brand-name">Silver Board</div>
-        <div class="brand-sub">7Ei AG · intelligence field</div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Sittings">
+      <div class="sidebar-head">
+        <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+        <button class="sidebar-new" id="newSitting" type="button" title="New sitting">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="sidebar-label">New sitting</span>
+        </button>
       </div>
-    </div>
-    <ol class="stepper" id="stepper" aria-label="Sitting progress">
-      <li data-step="setup">Frame</li>
-      <li data-step="opening">Field</li>
-      <li data-step="tensions">Tensions</li>
-      <li data-step="synthesis">Silver Pill</li>
-      <li data-step="ratify">Ratify</li>
-      <li data-step="signal">Signal</li>
-    </ol>
-    <div class="top-actions">
-      <button class="ghost" id="composeBtn" type="button">Compose table</button>
-      <button class="ghost" id="guideBtn" type="button">How it works</button>
-      <button class="ghost" id="historyBtn" type="button">Past sittings</button>
-    </div>
-  </header>
-
-  <div class="topic" id="topic">
-    <div class="topic-main">
-      <div class="label">On the table</div>
-      <h1 id="topicTitle" hidden></h1>
-      <form class="composer" id="composer">
-        <div class="composer-row">
-          <textarea id="queryInput" rows="1" placeholder="Should we …?" aria-label="Query for the board"></textarea>
-          <div class="composer-actions">
-            <button class="composer-icon" type="button" id="attachBtn" title="Attach documents or photos" aria-label="Attach files">📎</button>
-            <button class="composer-icon" type="button" id="dictateBtn" title="Dictate" aria-label="Dictate query">🎤</button>
-            <button class="convene" type="submit" id="querySubmit">Seat the board</button>
-          </div>
-        </div>
-        <input type="file" id="attachFiles" multiple accept="image/*,.pdf,.md,.txt,.doc,.docx" hidden>
-        <ul class="attach-list" id="attachList" hidden></ul>
-        <p class="composer-hint muted" id="composerHint"></p>
-      </form>
-    </div>
-    <div class="options" id="options" hidden></div>
-  </div>
-
-  <main class="layout">
-    <section class="stage-wrap" aria-label="The board table">
-      <div class="stage" id="stage">
-        <div class="wall" aria-hidden="true"></div>
-        <div class="spot" id="spot" aria-hidden="true"></div>
-        <div id="seats"></div>
-        <div class="table" id="table" aria-hidden="true"><span class="etch">SB</span></div>
-        <div id="plates"></div>
-
-        <div class="center" id="center">
-          <div class="waiting" id="waiting">
-            <p class="pulse">The room is open</p>
-            <h2>Bring a decision to the Silver Board</h2>
-            <p class="waiting-secondary">Type above to open a sitting, or run <code>/silver-board …</code> in Claude Code. The field activates as files land in <code>sessions/</code>.</p>
-            <div class="row">
-              <button class="ghost" type="button" id="waitCompose">Replace the seats</button>
-              <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
-            </div>
-          </div>
-          <div class="caption" id="caption" hidden>
-            <div class="cap-head">
-              <span class="cap-av" id="capAv"></span>
-              <span class="cap-who" id="capWho"></span>
-              <span class="cap-tag" id="capTag"></span>
-            </div>
-            <div class="cap-body" id="capBody"></div>
-          </div>
-        </div>
-
-        <div class="signal-card" id="signalCard" hidden>
-          <div class="sig-chrome">
-            <button type="button" class="sig-drag" id="sigDrag" aria-label="Move card">⠿</button>
-            <span class="label">The Board speaks</span>
-            <div class="sig-win">
-              <button type="button" class="sig-win-btn" id="sigMin" title="Minimize" aria-label="Minimize">−</button>
-              <button type="button" class="sig-win-btn" id="sigExpand" title="Expand" aria-label="Expand">⤢</button>
-            </div>
-          </div>
-          <div class="sig-scroll">
-            <div class="sig-head">
-              <div class="sig-label" id="sigLabel"></div>
-              <span class="sig-option" id="sigOption" hidden></span>
-            </div>
-            <p id="sigCall"></p>
-            <div id="sigExtras"></div>
-            <div id="sigFoot"></div>
-          </div>
-        </div>
-
-        <div class="playbar" id="playbar" hidden>
-          <span class="queue" id="queueInfo"></span>
-          <div class="speed" role="radiogroup" aria-label="Playback speed">
-            <button type="button" data-speed="1" aria-pressed="true">1x</button>
-            <button type="button" data-speed="1.6" aria-pressed="false">1.6x</button>
-            <button type="button" data-speed="2.5" aria-pressed="false">2.5x</button>
-          </div>
-          <button type="button" class="skip" id="skipBtn">Skip ahead</button>
+      <div class="sidebar-search">
+        <input type="search" id="sessionSearch" placeholder="Search sittings" aria-label="Search sittings">
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav" aria-label="Past sittings">
+        <div class="sidebar-empty muted" id="sidebarEmpty">No sittings yet</div>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="sidebar-link" id="composeBtn" type="button" title="Compose table">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span class="sidebar-label">Compose table</span>
+        </button>
+        <button class="sidebar-link" id="guideBtn" type="button" title="How it works">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span class="sidebar-label">How it works</span>
+        </button>
+        <div class="sidebar-identity">
+          <span class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" role="img" aria-label="7Ei"><path d="M43.5 8.74 56.5 8.74 63 20 56.5 31.26 43.5 31.26 37 20Z"/><path d="M17.52 23.74 30.52 23.74 37.02 35 30.52 46.26 17.52 46.26 11.02 35Z"/><path d="M69.48 23.74 82.48 23.74 88.98 35 82.48 46.26 69.48 46.26 62.98 35Z"/><path d="M43.5 38.74 56.5 38.74 63 50 56.5 61.26 43.5 61.26 37 50Z"/><path d="M17.52 53.74 30.52 53.74 37.02 65 30.52 76.26 17.52 76.26 11.02 65Z"/><path d="M69.48 53.74 82.48 53.74 88.98 65 82.48 76.26 69.48 76.26 62.98 65Z"/><path d="M43.5 68.74 56.5 68.74 63 80 56.5 91.26 43.5 91.26 37 80Z"/></svg></span>
+          <span class="sidebar-label">Silver Board · 7Ei</span>
         </div>
       </div>
-    </section>
-
-    <aside class="panel" aria-label="Field notes">
-      <div class="panel-head" id="panelHead">Field</div>
-      <div class="tabpanel" id="feed">
-        <div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>
-      </div>
-      <h3 class="panel-sub">Tensions</h3>
-      <div id="tensionBox" class="muted">Waiting for the field.</div>
     </aside>
-  </main>
 
-  <p class="disclaimer" id="disclaimer">Simulated advisors. Not the people. No endorsement.</p>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" role="img" aria-label="7Ei"><path d="M43.5 8.74 56.5 8.74 63 20 56.5 31.26 43.5 31.26 37 20Z"/><path d="M17.52 23.74 30.52 23.74 37.02 35 30.52 46.26 17.52 46.26 11.02 35Z"/><path d="M69.48 23.74 82.48 23.74 88.98 35 82.48 46.26 69.48 46.26 62.98 35Z"/><path d="M43.5 38.74 56.5 38.74 63 50 56.5 61.26 43.5 61.26 37 50Z"/><path d="M17.52 53.74 30.52 53.74 37.02 65 30.52 76.26 17.52 76.26 11.02 65Z"/><path d="M69.48 53.74 82.48 53.74 88.98 65 82.48 76.26 69.48 76.26 62.98 65Z"/><path d="M43.5 68.74 56.5 68.74 63 80 56.5 91.26 43.5 91.26 37 80Z"/></svg></span>
+          <div>
+            <div class="brand-name">Silver Board</div>
+            <div class="brand-sub">7Ei AG · intelligence field</div>
+          </div>
+        </div>
+        <ol class="stepper" id="stepper" aria-label="Sitting progress">
+          <li data-step="setup">Frame</li>
+          <li data-step="opening">Field</li>
+          <li data-step="tensions">Tensions</li>
+          <li data-step="synthesis">Silver Pill</li>
+          <li data-step="ratify">Ratify</li>
+          <li data-step="signal">Signal</li>
+        </ol>
+      </header>
+
+      <div class="topic" id="topic">
+        <div class="topic-main">
+          <div class="label">On the table</div>
+          <p class="topic-sub" id="topicTitle" hidden></p>
+          <form class="composer" id="composer">
+            <div class="composer-pill">
+              <textarea id="queryInput" rows="1" placeholder="Ask the board…" aria-label="Query for the board"></textarea>
+              <div class="composer-actions">
+                <button class="composer-icon" type="button" id="attachBtn" title="Attach documents or photos" aria-label="Attach files">📎</button>
+                <button class="composer-icon" type="button" id="dictateBtn" title="Dictate" aria-label="Dictate query">🎤</button>
+                <button class="composer-send" type="submit" id="querySubmit" aria-label="Seat the board">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L3 12h6v10l12-14h-6z"/></svg>
+                </button>
+              </div>
+            </div>
+            <input type="file" id="attachFiles" multiple accept="image/*,.pdf,.md,.txt,.doc,.docx" hidden>
+            <ul class="attach-list" id="attachList" hidden></ul>
+            <p class="composer-hint muted" id="composerHint"></p>
+          </form>
+        </div>
+        <div class="options" id="options" hidden></div>
+      </div>
+
+      <main class="layout">
+        <section class="stage-wrap" aria-label="The board table">
+          <div class="stage" id="stage">
+            <div class="wall" aria-hidden="true"></div>
+            <div class="spot" id="spot" aria-hidden="true"></div>
+            <div id="seats"></div>
+            <div class="table" id="table" aria-hidden="true"></div>
+            <div id="plates"></div>
+
+            <div class="center" id="center">
+              <div class="waiting" id="waiting">
+                <p class="pulse">The room is open</p>
+                <h2>Bring a decision to the Silver Board</h2>
+                <p class="waiting-secondary">Type above to open a sitting, or run <code>/silver-board …</code> in Claude Code. The field activates as files land in <code>sessions/</code>.</p>
+                <div class="row">
+                  <button class="ghost" type="button" id="waitCompose">Replace the seats</button>
+                  <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
+                </div>
+              </div>
+              <div class="caption" id="caption" hidden>
+                <div class="cap-head">
+                  <span class="cap-av" id="capAv"></span>
+                  <span class="cap-who" id="capWho"></span>
+                  <span class="cap-tag" id="capTag"></span>
+                </div>
+                <div class="cap-body" id="capBody"></div>
+              </div>
+            </div>
+
+            <div class="signal-card" id="signalCard" hidden>
+              <div class="sig-chrome">
+                <button type="button" class="sig-drag" id="sigDrag" aria-label="Move card">⠿</button>
+                <span class="label">The Board speaks</span>
+                <div class="sig-win">
+                  <button type="button" class="sig-win-btn" id="sigMin" title="Minimize" aria-label="Minimize">−</button>
+                  <button type="button" class="sig-win-btn" id="sigExpand" title="Expand" aria-label="Expand">⤢</button>
+                </div>
+              </div>
+              <div class="sig-scroll">
+                <div class="sig-head">
+                  <div class="sig-label" id="sigLabel"></div>
+                  <span class="sig-option" id="sigOption" hidden></span>
+                </div>
+                <p id="sigCall"></p>
+                <div id="sigExtras"></div>
+                <div id="sigFoot"></div>
+              </div>
+            </div>
+
+            <div class="playbar" id="playbar" hidden>
+              <span class="queue" id="queueInfo"></span>
+              <div class="speed" role="radiogroup" aria-label="Playback speed">
+                <button type="button" data-speed="1" aria-pressed="true">1x</button>
+                <button type="button" data-speed="1.6" aria-pressed="false">1.6x</button>
+                <button type="button" data-speed="2.5" aria-pressed="false">2.5x</button>
+              </div>
+              <button type="button" class="skip" id="skipBtn">Skip ahead</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="Field notes">
+          <div class="panel-head" id="panelHead">Field</div>
+          <div class="tabpanel" id="feed">
+            <div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>
+          </div>
+          <h3 class="panel-sub">Tensions</h3>
+          <div id="tensionBox" class="muted">Waiting for the field.</div>
+        </aside>
+      </main>
+
+      <p class="disclaimer" id="disclaimer">Simulated advisors. Not the people. No endorsement.</p>
+    </div>
+  </div>
 
   <dialog id="guide" class="card-dialog">
     <h2>How a sitting works</h2>

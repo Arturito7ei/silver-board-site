@@ -3,6 +3,7 @@ const STATIC = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const SHAPES = ["base", "open", "mid", "blink"];
 const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signal"];
 const TABLE_STORE = "silver-board-table";
+const SIDEBAR_STORE = "silver-board-sidebar";
 
 const state = {
   seats: [],
@@ -306,7 +307,6 @@ function pushFeed(seat, f) {
 function setComposerMode(live) {
   $("topic").classList.toggle("live", live);
   $("topicTitle").hidden = !live;
-  $("composer").classList.toggle("collapsed", live);
   $("options").hidden = !live;
 }
 
@@ -770,13 +770,124 @@ function onStageClick(e) {
   openCard(seat.dataset.key);
 }
 
-async function openHistory() {
+function sessionWhen(s) {
+  if (s.started) return new Date(s.started);
+  const m = String(s.id || "").match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? new Date(m[1]) : null;
+}
+
+function sessionDateGroup(s) {
+  const d = sessionWhen(s);
+  if (!d || Number.isNaN(d.getTime())) return "Older";
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = startToday - startDate;
+  const day = 86400000;
+  if (diff === 0) return "Today";
+  if (diff === day) return "Yesterday";
+  if (diff < 7 * day) return "Previous 7 days";
+  return "Older";
+}
+
+function bindSessionClicks(root) {
+  root.querySelectorAll("[data-id]").forEach((btn) => {
+    btn.onclick = () => {
+      stream(btn.dataset.id, true);
+      $("history").close();
+    };
+  });
+}
+
+function renderSidebarSessions(sessions, filter = "") {
+  const nav = $("sidebarNav");
+  const q = filter.trim().toLowerCase();
+  const items = (sessions || []).filter((s) => {
+    if (!q) return true;
+    return `${s.title || ""} ${s.id || ""} ${s.status || ""}`.toLowerCase().includes(q);
+  });
+  const order = ["Today", "Yesterday", "Previous 7 days", "Older"];
+  const folders = [
+    { id: "default", label: "Default table", sessions: items.filter((s) => s.status === "live" || s.status === "running") },
+    { id: "past", label: "Past sittings", sessions: items.filter((s) => s.status !== "live" && s.status !== "running") },
+  ];
+  let html = "";
+  for (const folder of folders) {
+    html += `<div class="sidebar-folder" data-folder="${esc(folder.id)}">
+      <button type="button" class="sidebar-folder-toggle">${esc(folder.label)}</button>
+      <div class="sidebar-folder-body">`;
+    if (!folder.sessions.length) {
+      html += `<p class="sidebar-empty muted">Empty</p>`;
+    } else {
+      const byGroup = new Map();
+      for (const s of folder.sessions) {
+        const g = sessionDateGroup(s);
+        if (!byGroup.has(g)) byGroup.set(g, []);
+        byGroup.get(g).push(s);
+      }
+      for (const g of order) {
+        const list = byGroup.get(g);
+        if (!list?.length) continue;
+        html += `<div class="sidebar-group"><div class="sidebar-group-title">${esc(g)}</div><ul class="sidebar-sessions">`;
+        html += list
+          .map(
+            (s) =>
+              `<li><button type="button" data-id="${esc(s.id)}" class="${s.id === state.current ? "active" : ""}">${esc(s.title || s.id)}</button></li>`
+          )
+          .join("");
+        html += `</ul></div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  if (!items.length) {
+    nav.innerHTML = `<div class="sidebar-empty muted">${q ? "No matches" : "No sittings yet"}</div>`;
+    return;
+  }
+  nav.innerHTML = html;
+  nav.querySelectorAll(".sidebar-folder-toggle").forEach((btn) => {
+    btn.onclick = () => btn.closest(".sidebar-folder").classList.toggle("collapsed");
+  });
+  bindSessionClicks(nav);
+}
+
+async function refreshSessions() {
   const data = await api("/api/sessions");
+  state.allSessions = data.sessions || [];
+  renderSidebarSessions(state.allSessions, $("sessionSearch")?.value || "");
+  return data;
+}
+
+async function openHistory() {
+  const data = await refreshSessions();
   $("historyList").innerHTML =
     (data.sessions || [])
       .map((s) => `<li><button class="ghost replay" data-id="${esc(s.id)}" type="button">${esc(s.title || s.id)}</button> <span class="muted">${esc(s.status)}</span></li>`)
       .join("") || "<li class='muted'>None yet</li>";
+  bindSessionClicks($("historyList"));
   $("history").showModal();
+}
+
+function bindSidebar() {
+  const sidebar = $("sidebar");
+  const collapsed = localStorage.getItem(SIDEBAR_STORE) === "collapsed";
+  sidebar.classList.toggle("collapsed", collapsed);
+  $("sidebarToggle").setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  $("sidebarToggle").onclick = () => {
+    const next = !sidebar.classList.contains("collapsed");
+    sidebar.classList.toggle("collapsed", next);
+    localStorage.setItem(SIDEBAR_STORE, next ? "collapsed" : "expanded");
+    $("sidebarToggle").setAttribute("aria-label", next ? "Expand sidebar" : "Collapse sidebar");
+    layoutStage();
+  };
+  $("newSitting").onclick = () => {
+    if (state.es) state.es.close();
+    state.current = null;
+    resetStage();
+    $("queryInput").focus();
+    setComposerHint(STATIC || !state.writable ? "Local room needed to run a sitting. Chrome preview only." : "Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
+  };
+  $("sessionSearch").oninput = () => renderSidebarSessions(state.allSessions || [], $("sessionSearch").value);
 }
 
 async function boot() {
@@ -819,10 +930,11 @@ async function boot() {
     renderAttachList();
   };
 
+  bindSidebar();
+
   $("guideBtn").onclick = () => $("guide").showModal();
   $("guideClose").onclick = () => $("guide").close();
   $("historyClose").onclick = () => $("history").close();
-  $("historyBtn").onclick = openHistory;
   $("waitHistory").onclick = openHistory;
   $("composeBtn").onclick = () => {
     fillCompose();
@@ -849,7 +961,7 @@ async function boot() {
     };
   });
 
-  const sess = await api("/api/sessions");
+  const sess = await refreshSessions();
   const live = sess.live || sess.running;
   if (live) stream(live, false);
   else if (STATIC && sess.sessions?.[0]) stream(sess.sessions[0].id, true);
@@ -857,7 +969,7 @@ async function boot() {
   if (!STATIC) {
     setInterval(async () => {
       if (state.current && state.playing) return;
-      const data = await api("/api/sessions");
+      const data = await refreshSessions();
       if (data.live && data.live !== state.current) stream(data.live, false);
     }, 2000);
   }
