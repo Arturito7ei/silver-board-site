@@ -149,6 +149,17 @@ function layoutStage() {
   const ry = H * (narrow ? 0.46 : 0.42);
   const t = $("table");
   Object.assign(t.style, { left: `${cx - rx}px`, top: `${cy - ry}px`, width: `${rx * 2}px`, height: `${ry * 2}px` });
+  const totem = $("tableTotem");
+  if (totem) {
+    const tw = rx * 0.72;
+    const th = tw * 0.34;
+    Object.assign(totem.style, {
+      left: `${cx - tw / 2}px`,
+      top: `${cy - ry * 0.42 - th / 2}px`,
+      width: `${tw}px`,
+      height: `${th}px`,
+    });
+  }
   const edge = (x) => cy - ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2));
   const n = state.seats.length;
   state.seats.forEach((key, i) => {
@@ -1000,9 +1011,10 @@ async function openHistory() {
 
 function bindSidebar() {
   const sidebar = $("sidebar");
-  const collapsed = localStorage.getItem(SIDEBAR_STORE) === "collapsed";
-  sidebar.classList.toggle("collapsed", collapsed);
-  $("sidebarToggle").setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  const expanded = localStorage.getItem(SIDEBAR_STORE) === "expanded";
+  sidebar.classList.toggle("collapsed", !expanded);
+  $("sidebarToggle").setAttribute("aria-label", expanded ? "Collapse sidebar" : "Expand sidebar");
+  layoutStage();
   $("sidebarToggle").onclick = () => {
     const next = !sidebar.classList.contains("collapsed");
     sidebar.classList.toggle("collapsed", next);
