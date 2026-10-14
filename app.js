@@ -4,6 +4,7 @@ const SHAPES = ["base", "open", "mid", "blink"];
 const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signal"];
 const TABLE_STORE = "silver-board-table";
 const SIDEBAR_STORE = "silver-board-sidebar";
+const FIELD_STORE = "silver-board-field";
 
 const state = {
   seats: [],
@@ -151,11 +152,11 @@ function layoutStage() {
   Object.assign(t.style, { left: `${cx - rx}px`, top: `${cy - ry}px`, width: `${rx * 2}px`, height: `${ry * 2}px` });
   const totem = $("tableTotem");
   if (totem) {
-    const tw = rx * 0.72;
-    const th = tw * 0.34;
+    const tw = rx * 2 * 0.34;
+    const th = tw * 0.92;
     Object.assign(totem.style, {
       left: `${cx - tw / 2}px`,
-      top: `${cy - ry * 0.42 - th / 2}px`,
+      top: `${cy - th * 0.58}px`,
       width: `${tw}px`,
       height: `${th}px`,
     });
@@ -1009,6 +1010,24 @@ async function openHistory() {
   $("history").showModal();
 }
 
+function bindField() {
+  const panel = $("fieldPanel");
+  const layout = document.querySelector(".layout");
+  const expanded = localStorage.getItem(FIELD_STORE) === "expanded";
+  panel.classList.toggle("collapsed", !expanded);
+  layout.classList.toggle("field-collapsed", !expanded);
+  $("fieldToggle").setAttribute("aria-label", expanded ? "Collapse Field" : "Expand Field");
+  layoutStage();
+  $("fieldToggle").onclick = () => {
+    const next = panel.classList.contains("collapsed");
+    panel.classList.toggle("collapsed", !next);
+    layout.classList.toggle("field-collapsed", !next);
+    localStorage.setItem(FIELD_STORE, next ? "expanded" : "collapsed");
+    $("fieldToggle").setAttribute("aria-label", next ? "Collapse Field" : "Expand Field");
+    layoutStage();
+  };
+}
+
 function bindSidebar() {
   const sidebar = $("sidebar");
   const expanded = localStorage.getItem(SIDEBAR_STORE) === "expanded";
@@ -1073,6 +1092,7 @@ async function boot() {
   };
 
   bindSidebar();
+  bindField();
   bindKnowledgePane();
 
   $("guideBtn").onclick = () => $("guide").showModal();

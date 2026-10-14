@@ -144,8 +144,11 @@
           </div>
         </section>
 
-        <aside class="panel" aria-label="Field notes">
-          <div class="panel-head" id="panelHead">Field</div>
+        <aside class="panel collapsed" id="fieldPanel" aria-label="Field notes">
+          <button class="panel-head" id="fieldToggle" type="button" aria-label="Expand Field" title="Expand Field">
+            <span class="panel-head-label">Field</span>
+            <svg class="panel-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
           <div class="tabpanel" id="feed">
             <div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>
           </div>
