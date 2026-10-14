@@ -689,6 +689,131 @@ function populateArch() {
   $("archSelect").innerHTML = state.archetypes.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("");
 }
 
+function renderKnowledgeList(knowledge) {
+  const list = $("knowledgeList");
+  const items = knowledge?.ledger?.items || [];
+  if (!items.length) {
+    list.innerHTML = `<li class="muted" style="border:0;background:transparent;padding:0.2rem 0">Inbox empty</li>`;
+    return;
+  }
+  list.innerHTML = items
+    .map(
+      (i) =>
+        `<li><span class="k-meta">${esc(i.kind)}</span><span class="k-title" title="${esc(i.title)}">${esc(i.title)}</span><span class="k-status">${esc(i.status || "queued")}</span><button type="button" data-rm="${esc(i.id)}" aria-label="Remove">×</button></li>`
+    )
+    .join("");
+  list.querySelectorAll("[data-rm]").forEach((b) => {
+    b.onclick = () => removeKnowledgeItem(b.dataset.rm);
+  });
+}
+
+function setKnowledgePaneMode(enabled, note) {
+  $("knowledgePane").classList.toggle("disabled", !enabled);
+  if (note) $("knowledgeNote").textContent = note;
+}
+
+async function loadKnowledge(key) {
+  state.editorKey = key;
+  if (STATIC || !state.writable || !key) {
+    setKnowledgePaneMode(false, "Local room needed to ingest. Chrome preview only.");
+    renderKnowledgeList({ ledger: { items: [] } });
+    return;
+  }
+  setKnowledgePaneMode(true);
+  try {
+    const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+    renderKnowledgeList(data.knowledge);
+  } catch (e) {
+    renderKnowledgeList({ ledger: { items: [] } });
+    $("knowledgeNote").textContent = String(e.message || e);
+  }
+}
+
+async function uploadKnowledgeFiles(files) {
+  const key = state.editorKey;
+  if (!key || STATIC || !state.writable) return;
+  for (const file of files) {
+    const attachment = await fileToAttachment(file);
+    await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(attachment),
+    });
+  }
+  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+  renderKnowledgeList(data.knowledge);
+  $("editorMsg").hidden = false;
+  $("editorMsg").textContent = `Added ${files.length} file(s) to inbox/.`;
+}
+
+async function addKnowledgeLink() {
+  const key = state.editorKey;
+  if (!key || STATIC || !state.writable) return;
+  const url = $("linkUrl").value.trim();
+  if (!url) {
+    $("editorMsg").hidden = false;
+    $("editorMsg").textContent = "Enter a URL for the citation.";
+    return;
+  }
+  await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url, title: $("linkTitle").value.trim(), kind: $("linkKind").value }),
+  });
+  $("linkUrl").value = "";
+  $("linkTitle").value = "";
+  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+  renderKnowledgeList(data.knowledge);
+  $("editorMsg").hidden = false;
+  $("editorMsg").textContent = "Link appended to ledger.json.";
+}
+
+async function removeKnowledgeItem(id) {
+  const key = state.editorKey;
+  if (!key || STATIC || !state.writable) return;
+  await api(`/api/advisor/${encodeURIComponent(key)}/inbox/${encodeURIComponent(id)}`, { method: "DELETE" });
+  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+  renderKnowledgeList(data.knowledge);
+}
+
+async function requestDistill() {
+  const key = state.editorKey;
+  if (!key || STATIC || !state.writable) return;
+  const res = await api(`/api/advisor/${encodeURIComponent(key)}/distill`, { method: "POST" });
+  $("editorMsg").hidden = false;
+  $("editorMsg").textContent = `Distill flag written (${res.queued} queued → distill-request.md). No hosted model called.`;
+}
+
+function bindKnowledgePane() {
+  const drop = $("knowledgeDrop");
+  $("knowledgePick").onclick = () => $("knowledgeFiles").click();
+  $("knowledgeFiles").onchange = () => {
+    if ($("knowledgeFiles").files.length) uploadKnowledgeFiles([...$("knowledgeFiles").files]);
+    $("knowledgeFiles").value = "";
+  };
+  $("linkAdd").onclick = () => addKnowledgeLink().catch((e) => {
+    $("editorMsg").hidden = false;
+    $("editorMsg").textContent = String(e.message || e);
+  });
+  $("distillBtn").onclick = () => requestDistill().catch((e) => {
+    $("editorMsg").hidden = false;
+    $("editorMsg").textContent = String(e.message || e);
+  });
+  drop.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    drop.classList.add("drag");
+  });
+  drop.addEventListener("dragleave", () => drop.classList.remove("drag"));
+  drop.addEventListener("drop", (e) => {
+    e.preventDefault();
+    drop.classList.remove("drag");
+    if (e.dataTransfer?.files?.length) uploadKnowledgeFiles([...e.dataTransfer.files]).catch((err) => {
+      $("editorMsg").hidden = false;
+      $("editorMsg").textContent = String(err.message || err);
+    });
+  });
+}
+
 async function openEditor(key, isNew = false) {
   const form = $("editorForm");
   form.reset();
@@ -717,10 +842,15 @@ async function openEditor(key, isNew = false) {
         $("editorMsg").hidden = false;
         $("editorMsg").textContent = "Knowledge files are not on GitHub Pages. Run npm start to edit _hot.md.";
       }
+      await loadKnowledge(key);
     } catch (e) {
       $("editorMsg").hidden = false;
       $("editorMsg").textContent = String(e.message || e);
     }
+  } else {
+    state.editorKey = null;
+    setKnowledgePaneMode(false, "Save the member first, then ingest knowledge.");
+    renderKnowledgeList({ ledger: { items: [] } });
   }
   $("editor").showModal();
 }
@@ -931,6 +1061,7 @@ async function boot() {
   };
 
   bindSidebar();
+  bindKnowledgePane();
 
   $("guideBtn").onclick = () => $("guide").showModal();
   $("guideClose").onclick = () => $("guide").close();

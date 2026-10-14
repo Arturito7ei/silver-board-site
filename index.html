@@ -214,6 +214,31 @@
       <label class="wide">Sources (<code>sources.md</code>)
         <textarea name="sources" rows="6" placeholder="Public sources. Not affiliated."></textarea>
       </label>
+      <div class="wide knowledge-pane" id="knowledgePane">
+        <h3 class="knowledge-head">Knowledge inbox</h3>
+        <p class="muted knowledge-note" id="knowledgeNote">Drop PDFs, MD, TXT, or DOCX into this seat's local inbox. Links append <code>ledger.json</code>. Distill does not call a hosted model.</p>
+        <div class="knowledge-drop" id="knowledgeDrop" tabindex="0">
+          <span>Drop files here or</span>
+          <button class="ghost" type="button" id="knowledgePick">Choose file</button>
+          <input type="file" id="knowledgeFiles" accept=".pdf,.md,.txt,.docx" hidden>
+        </div>
+        <div class="knowledge-link">
+          <input type="url" id="linkUrl" placeholder="https://…" aria-label="Source URL">
+          <input type="text" id="linkTitle" placeholder="Title" aria-label="Source title">
+          <select id="linkKind" aria-label="Source kind">
+            <option value="book">Book</option>
+            <option value="letter">Letter</option>
+            <option value="talk">Talk</option>
+            <option value="transcript">Transcript</option>
+            <option value="other">Other</option>
+          </select>
+          <button class="ghost" type="button" id="linkAdd">Add link</button>
+        </div>
+        <ul class="knowledge-list" id="knowledgeList"></ul>
+        <div class="compose-row">
+          <button class="ghost" type="button" id="distillBtn">Request distill</button>
+        </div>
+      </div>
       <div class="compose-row">
         <button class="convene" type="submit">Save member</button>
         <button class="ghost" id="editorClose" type="button">Cancel</button>

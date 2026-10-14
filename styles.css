@@ -588,6 +588,80 @@ code {
 .editor label { display: grid; gap: 0.25rem; font-size: 0.72rem; color: var(--muted); }
 .editor .wide { grid-column: 1 / -1; }
 .editor textarea { min-height: 8rem; resize: vertical; }
+.knowledge-pane {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+  margin-top: 0.35rem;
+}
+.knowledge-head {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-brand);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.knowledge-note { font-size: 0.78rem; margin: 0 0 0.65rem; }
+.knowledge-drop {
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  padding: 0.85rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 0.65rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.knowledge-drop.drag { border-color: var(--gold); background: rgba(196,163,90,0.08); color: var(--silver); }
+.knowledge-drop button { margin-left: 0.35rem; }
+.knowledge-link {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+.knowledge-link input, .knowledge-link select {
+  font: inherit;
+  color: var(--ink);
+  background: #0c1016;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  min-width: 0;
+}
+.knowledge-list {
+  list-style: none;
+  margin: 0 0 0.65rem;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+.knowledge-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+}
+.knowledge-list .k-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-list .k-meta { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.knowledge-list .k-status { color: var(--gold); font-size: 0.68rem; }
+.knowledge-list button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+.knowledge-list button:hover { color: var(--no); }
+.knowledge-pane.disabled { opacity: 0.55; pointer-events: none; }
+@media (max-width: 820px) {
+  .knowledge-link { grid-template-columns: 1fr; }
+}
 #historyList { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.45rem; }
 #historyList button { width: 100%; text-align: left; }
 
