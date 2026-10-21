@@ -7,8 +7,8 @@ const SIDEBAR_STORE = "silver-board-sidebar";
 const FIELD_STORE = "silver-board-field";
 /** Launch demo ask — composer suggestion + canned first paint */
 const DEMO_QUERY =
-  "Produce $20B-scale ideas for Thierry Arys Ruiz — prioritise technology, commodity trading, or finance";
-const DEMO_ID = "2026-10-21-example-20b-scale-path-thierry";
+  "Provide with your strengths and how you can help as an augmented board of Advisors";
+const DEMO_ID = "2026-10-22-example-strengths-augmented-board";
 
 const state = {
   seats: [],
@@ -283,6 +283,7 @@ function showSittingStatus(ev = {}) {
   $("caption").hidden = true;
   $("signalCard").hidden = true;
   el.hidden = false;
+  el.classList.remove("minimized");
   const runner = ev.runner || "local";
   const stateName = ev.state || "awaiting_chair";
   $("sittingStatusPulse").textContent = stateName === "awaiting_chair" ? "Awaiting chair" : stateName;
@@ -307,6 +308,7 @@ function showCaption(seat, ev) {
   hideSittingStatus();
   $("signalCard").hidden = true;
   $("caption").hidden = false;
+  $("caption").classList.remove("minimized");
   const s = state.byKey[seat] || { initials: "?", short: seat, color: "#c5cdd8", key: seat };
   const f = typeof ev === "string" ? { headline: ev, sub: "", badge: "", tag: "" } : formatSpeech(ev);
   capAvatar(s);
@@ -408,7 +410,7 @@ function pickLaunchDemo(sessions) {
   return (
     list.find((s) => s.demo) ||
     list.find((s) => s.id === DEMO_ID) ||
-    list.find((s) => String(s.id).includes("example-20b")) ||
+    list.find((s) => String(s.id).includes("example-strengths")) ||
     list.find((s) => String(s.id).includes("example"))
   );
 }
@@ -633,9 +635,9 @@ function bindDictate() {
   };
 }
 
-function bindSignalCard() {
-  const card = $("signalCard");
-  const handle = $("sigDrag");
+/** Drag + optional minimize for stage overlays (signal-card, caption, sitting-status). */
+function bindDraggableBubble(card, handle, minBtn, { expandBtn = null } = {}) {
+  if (!card || !handle) return;
   const stage = $("stage");
   let drag = null;
 
@@ -646,6 +648,8 @@ function bindSignalCard() {
     const y = e.clientY - rect.top - drag.oy;
     card.style.left = `${Math.max(0, Math.min(x, rect.width - card.offsetWidth))}px`;
     card.style.top = `${Math.max(0, Math.min(y, rect.height - card.offsetHeight))}px`;
+    card.style.bottom = "auto";
+    card.style.right = "auto";
   };
 
   const onUp = () => {
@@ -661,19 +665,56 @@ function bindSignalCard() {
     drag = { ox: e.clientX - rect.left, oy: e.clientY - rect.top };
     card.style.left = `${rect.left - stageRect.left}px`;
     card.style.top = `${rect.top - stageRect.top}px`;
+    card.style.bottom = "auto";
+    card.style.right = "auto";
     card.style.transform = "none";
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
   };
 
-  $("sigMin").onclick = () => {
-    card.classList.toggle("minimized");
-    if (card.classList.contains("minimized")) card.classList.remove("expanded");
-  };
-  $("sigExpand").onclick = () => {
-    card.classList.remove("minimized");
-    card.classList.toggle("expanded");
-  };
+  if (minBtn) {
+    minBtn.onclick = () => {
+      card.classList.toggle("minimized");
+      if (card.classList.contains("minimized")) card.classList.remove("expanded");
+    };
+  }
+  if (expandBtn) {
+    expandBtn.onclick = () => {
+      card.classList.remove("minimized");
+      card.classList.toggle("expanded");
+    };
+  }
+}
+
+function bindSignalCard() {
+  bindDraggableBubble($("signalCard"), $("sigDrag"), $("sigMin"), { expandBtn: $("sigExpand") });
+}
+
+function bindOverlayBubbles() {
+  bindDraggableBubble($("caption"), $("capDrag"), $("capMin"));
+  bindDraggableBubble($("sittingStatus"), $("statusDrag"), $("statusMin"));
+  const dismiss = $("waitDismiss");
+  if (dismiss) {
+    dismiss.onclick = () => {
+      $("waiting").hidden = true;
+    };
+  }
+}
+
+function setFieldExpanded(expanded) {
+  const panel = $("fieldPanel");
+  const layout = document.querySelector(".layout");
+  if (!panel || !layout) return;
+  panel.classList.toggle("collapsed", !expanded);
+  layout.classList.toggle("field-collapsed", !expanded);
+  localStorage.setItem(FIELD_STORE, expanded ? "expanded" : "collapsed");
+  $("fieldToggle").setAttribute("aria-label", expanded ? "Collapse Field" : "Expand Field");
+  layoutStage();
+}
+
+/** Demo / replay must show Field lines without hunting the totem. */
+function ensureFieldOpenForDemo() {
+  setFieldExpanded(true);
 }
 
 function stream(id, replay = false, opts = {}) {
@@ -682,6 +723,7 @@ function stream(id, replay = false, opts = {}) {
   state.queue = [];
   state.playing = false;
   resetStage({ preserveSittingStatus: !!opts.preserveSittingStatus });
+  if (replay || opts.demo || id === DEMO_ID) ensureFieldOpenForDemo();
   if (STATIC) {
     api(`/api/sessions/${id}`).then((data) => enqueueEvents(data.events || [], true));
     return;
@@ -1550,20 +1592,11 @@ async function openHistory() {
 }
 
 function bindField() {
-  const panel = $("fieldPanel");
-  const layout = document.querySelector(".layout");
   const expanded = localStorage.getItem(FIELD_STORE) === "expanded";
-  panel.classList.toggle("collapsed", !expanded);
-  layout.classList.toggle("field-collapsed", !expanded);
-  $("fieldToggle").setAttribute("aria-label", expanded ? "Collapse Field" : "Expand Field");
-  layoutStage();
+  setFieldExpanded(expanded);
   $("fieldToggle").onclick = () => {
-    const next = panel.classList.contains("collapsed");
-    panel.classList.toggle("collapsed", !next);
-    layout.classList.toggle("field-collapsed", !next);
-    localStorage.setItem(FIELD_STORE, next ? "expanded" : "collapsed");
-    $("fieldToggle").setAttribute("aria-label", next ? "Collapse Field" : "Expand Field");
-    layoutStage();
+    const next = $("fieldPanel").classList.contains("collapsed");
+    setFieldExpanded(next);
   };
 }
 
@@ -1625,6 +1658,7 @@ async function boot() {
   }
   window.addEventListener("resize", layoutStage);
   bindSignalCard();
+  bindOverlayBubbles();
   bindDictate();
 
   $("composer").onsubmit = submitQuery;

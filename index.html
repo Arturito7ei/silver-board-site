@@ -73,7 +73,7 @@
               <select id="sittingChair" aria-label="Chair for this sitting"></select>
             </label>
             <div class="composer-pill">
-              <textarea id="queryInput" rows="1" placeholder="Produce $20B-scale ideas for Thierry Arys Ruiz — prioritise technology, commodity trading, or finance" aria-label="Query for the board"></textarea>
+              <textarea id="queryInput" rows="1" placeholder="Provide with your strengths and how you can help as an augmented board of Advisors" aria-label="Query for the board"></textarea>
               <div class="composer-actions">
                 <button class="composer-icon" type="button" id="attachBtn" title="Attach documents or photos" aria-label="Attach files">📎</button>
                 <button class="composer-icon" type="button" id="dictateBtn" title="Dictate" aria-label="Dictate query">🎤</button>
@@ -102,22 +102,50 @@
 
             <div class="center" id="center">
               <div class="waiting" id="waiting">
-                <p class="pulse">The room is open</p>
-                <h2>Bring a decision to the Silver Board</h2>
-                <p class="waiting-secondary">Type above to open a sitting, or run <code>/silver-board …</code> in Claude Code. The field activates as files land in <code>sessions/</code>.</p>
-                <div class="row">
-                  <button class="ghost" type="button" id="waitCompose">Replace the seats</button>
-                  <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
+                <div class="bubble-chrome">
+                  <span class="label">Room</span>
+                  <div class="sig-win">
+                    <button type="button" class="sig-win-btn" id="waitDismiss" title="Dismiss" aria-label="Dismiss waiting card">×</button>
+                  </div>
+                </div>
+                <div class="bubble-body">
+                  <p class="pulse">The room is open</p>
+                  <h2>Bring a decision to the Silver Board</h2>
+                  <p class="waiting-secondary">Type above to open a sitting, or run <code>/silver-board …</code> in Claude Code. The field activates as files land in <code>sessions/</code>.</p>
+                  <div class="row">
+                    <button class="ghost" type="button" id="waitCompose">Replace the seats</button>
+                    <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
+                  </div>
                 </div>
               </div>
-              <div class="sitting-status" id="sittingStatus" hidden>
+            </div>
+
+            <div class="sitting-status overlay-bubble" id="sittingStatus" hidden>
+              <div class="bubble-chrome">
+                <button type="button" class="sig-drag" id="statusDrag" aria-label="Move sitting status">⠿</button>
+                <span class="label">Sitting</span>
+                <div class="sig-win">
+                  <button type="button" class="sig-win-btn" id="statusMin" title="Minimize" aria-label="Minimize sitting status">−</button>
+                </div>
+              </div>
+              <div class="bubble-body">
                 <p class="pulse" id="sittingStatusPulse">Awaiting chair</p>
                 <h2 id="sittingStatusTitle">Sitting stamped — no auto-answer yet</h2>
                 <p class="waiting-secondary" id="sittingStatusNote"></p>
                 <p class="sitting-status-meta" id="sittingStatusMeta"></p>
                 <pre class="sitting-status-path" id="sittingStatusPath" hidden></pre>
               </div>
-              <div class="caption" id="caption" hidden>
+            </div>
+
+            <div class="caption overlay-bubble" id="caption" hidden>
+              <div class="bubble-chrome">
+                <button type="button" class="sig-drag" id="capDrag" aria-label="Move caption">⠿</button>
+                <span class="label">Speaking</span>
+                <div class="sig-win">
+                  <button type="button" class="sig-win-btn" id="capMin" title="Minimize" aria-label="Minimize caption">−</button>
+                </div>
+              </div>
+              <div class="bubble-body">
                 <div class="cap-head">
                   <span class="cap-av" id="capAv"></span>
                   <span class="cap-who" id="capWho"></span>
@@ -128,7 +156,7 @@
             </div>
 
             <div class="signal-card" id="signalCard" hidden>
-              <div class="sig-chrome">
+              <div class="sig-chrome bubble-chrome">
                 <button type="button" class="sig-drag" id="sigDrag" aria-label="Move card">⠿</button>
                 <span class="label">The Board speaks</span>
                 <div class="sig-win">

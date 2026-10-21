@@ -1,8 +1,14 @@
 {
   "sessions": [
     {
-      "id": "2026-10-21-example-20b-scale-path-thierry",
-      "title": "Which $20B path for Thierry / 7Ei?",
+      "id": "2026-10-22-example-strengths-augmented-board",
+      "title": "Strengths — augmented board of Advisors",
+      "mode": "convene",
+      "status": "done"
+    },
+    {
+      "id": "2026-10-22-strengths-augmented-board-advisors",
+      "title": "Strengths — augmented board of Advisors",
       "mode": "convene",
       "status": "done"
     },
@@ -17,6 +23,12 @@
       "title": "What are the Strength of each and everyone of you?",
       "mode": "convene",
       "status": "awaiting_chair"
+    },
+    {
+      "id": "2026-10-21-example-20b-scale-path-thierry",
+      "title": "Which $20B path for Thierry / 7Ei?",
+      "mode": "convene",
+      "status": "done"
     }
   ],
   "running": null,

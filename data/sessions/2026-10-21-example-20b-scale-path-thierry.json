@@ -6,10 +6,10 @@
   "events": [
     {
       "type": "setup",
-      "t": 1,
+      "t": 2,
       "title": "Which $20B path for Thierry / 7Ei?",
       "decision": "Which $20B-scale path should Thierry Arys Ruiz / 7Ei prioritize next — technology (agent-native sovereignty software), commodity trading, or finance — and which concrete venture ideas survive a hard board?",
-      "brief": "Launch demo question (not an org strategy mandate): $20B-scale ideas fit to Thierry Arys Ruiz / 7Ei AG with priority domains technology, commodity trading, finance. Table: Musk, Altman, Bezos, Amodei, Jung, Sun Tzu; Chair Dalio.",
+      "brief": "Launch demo question (not an org strategy mandate): $20B-scale ideas fit to Thierry Arys Ruiz / 7Ei AG with priority domains technology, commodity trading, finance. Table: Musk, Altman, Bezos, Amodei, Jung, Sun Tzu; Chair Dalio. (Demoted from launch first-paint — kept as Past sitting, not deleted.)",
       "options": [
         {
           "id": "A",
@@ -72,12 +72,11 @@
         "provider": "cursor"
       },
       "handoff": "examples/2026-10-21-example-20b-scale-path-thierry/thinking-handoff.md",
-      "demo": true,
-      "demoLabel": "Demo sitting"
+      "demo": false
     },
     {
       "type": "phase",
-      "t": 1,
+      "t": 2,
       "phase": "opening",
       "label": "The field is speaking"
     },
@@ -256,7 +255,7 @@
     },
     {
       "type": "draft",
-      "t": 4,
+      "t": 3,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -278,13 +277,13 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 3,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 3,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
