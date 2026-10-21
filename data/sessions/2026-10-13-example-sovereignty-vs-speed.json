@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 2,
+      "t": 1,
       "title": "Room now, or protocol only?",
       "decision": "Ship a live Silver Board room as org infrastructure, or keep the Board as prose until Mission Control Sprint 6.",
       "brief": "Thierry asked 7MAN to create an interactive Silver Board, using Roast Room as UX template, and to plan 7Ei OS integration. Charter Art. 1 forbids a debate panel. Precedence 01 forbids a required cloud runner.",
@@ -67,7 +67,7 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 1,
       "phase": "opening",
       "label": "The field is speaking"
     },
@@ -248,7 +248,7 @@
     },
     {
       "type": "phase",
-      "t": 5,
+      "t": 4,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
@@ -350,7 +350,7 @@
     },
     {
       "type": "signal",
-      "t": 7,
+      "t": 6,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -387,7 +387,7 @@
     },
     {
       "type": "phase",
-      "t": 7,
+      "t": 6,
       "phase": "signal",
       "label": "The Board speaks"
     }

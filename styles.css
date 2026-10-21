@@ -267,6 +267,29 @@ code {
 .topic.live { background: var(--panel); }
 .topic-main { flex: 1; min-width: 0; }
 .composer { margin-top: 0.35rem; }
+.sitting-chair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  margin: 0 0 0.45rem;
+  max-width: 48rem;
+}
+.sitting-chair .label { margin: 0; }
+.sitting-chair select {
+  font: inherit;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  min-width: 12rem;
+  max-width: 100%;
+}
+.sitting-chair select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
 .composer-pill {
   display: flex;
   align-items: flex-end;
@@ -639,6 +662,34 @@ code {
   font-weight: 500;
 }
 .knowledge-note { font-size: 0.78rem; margin: 0 0 0.65rem; }
+.knowledge-pages-cta {
+  margin: 0.5rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  background: rgba(196, 163, 90, 0.08);
+}
+.knowledge-cta-title {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+.knowledge-pages-cta p { margin: 0.35rem 0; font-size: 0.82rem; line-height: 1.45; }
+.knowledge-cta-cmd {
+  margin: 0.55rem 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre;
+}
+.knowledge-pane.pages-static .knowledge-ingest { display: none; }
 .knowledge-drop {
   border: 1px dashed var(--line-strong);
   border-radius: 12px;

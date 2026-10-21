@@ -493,10 +493,11 @@ async function submitQuery(ev) {
   setComposerHint("Opening sitting…");
   try {
     const attachments = await Promise.all(state.attachments.map(fileToAttachment));
+    const chairKey = $("sittingChair")?.value || state.chairKey || "dalio";
     const res = await api("/api/sessions", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query, attachments }),
+      body: JSON.stringify({ query, attachments, chairKey }),
     });
     state.attachments = [];
     $("attachFiles").value = "";
@@ -651,25 +652,137 @@ function openCard(key) {
   });
 }
 
+function advisorOptions(selected) {
+  return Object.values(state.byKey)
+    .map((a) => `<option value="${esc(a.key)}" ${a.key === selected ? "selected" : ""}>${esc(displayName(a, a.key))} — ${esc(a.pillar || a.archetype)}</option>`)
+    .join("");
+}
+
+function fillSittingChair() {
+  const sel = $("sittingChair");
+  if (!sel) return;
+  const current = sel.value || state.chairKey || "dalio";
+  sel.innerHTML = advisorOptions(current);
+  if (![...sel.options].some((o) => o.value === current)) sel.value = state.chairKey || "dalio";
+  else sel.value = current;
+}
+
 function fillCompose() {
   const grid = $("composeGrid");
   const chair = state.chairKey;
   const seated = state.defaultSeats.filter((k) => k !== chair);
   const arch = state.archetypes.length ? state.archetypes : [{ id: "seat", name: "Seat" }];
-  const options = (selected) =>
-    Object.values(state.byKey)
-      .map((a) => `<option value="${esc(a.key)}" ${a.key === selected ? "selected" : ""}>${esc(displayName(a, a.key))} — ${esc(a.pillar || a.archetype)}</option>`)
-      .join("");
-  grid.innerHTML = `<label>Chair <select id="slot-chair">${options(chair)}</select></label>` +
+  grid.innerHTML = `<label>Chair <select id="slot-chair">${advisorOptions(chair)}</select></label>` +
     arch
       .map((a, i) => {
         const current = seated.find((k) => state.byKey[k]?.archetype === a.id) || seated[i] || seated[0];
-        return `<label>${esc(a.name)} <select data-arch="${esc(a.id)}">${options(current)}</select></label>`;
+        return `<label>${esc(a.name)} <select data-arch="${esc(a.id)}">${advisorOptions(current)}</select></label>`;
       })
       .join("");
   $("composeNote").textContent = STATIC
     ? "GitHub Pages is a snapshot. Seating here is preview-only. To save brains, run the room locally (npm start)."
     : "Six seats plus the Chair. Saving writes board/roster.json and keeps one voice (Charter Art. 1).";
+}
+
+function syncSettingsFields() {
+  const runtime = $("settingsRuntime")?.value || "local";
+  const provider = $("settingsProvider");
+  const showOllama = runtime === "ollama";
+  const showApi = runtime === "api";
+  $("settingsOllamaBaseLabel").hidden = !showOllama;
+  $("settingsApiBaseLabel").hidden = !showApi;
+  $("settingsApiKeyLabel").hidden = !showApi;
+  if (runtime !== "api" && provider) {
+    const map = { local: "local", cursor: "cursor", "claude-code": "claude-code", ollama: "ollama" };
+    if (map[runtime]) provider.value = map[runtime];
+  }
+}
+
+async function openSettings() {
+  const note = $("settingsNote");
+  const msg = $("settingsMsg");
+  msg.hidden = true;
+  if (STATIC || !state.writable) {
+    note.textContent = "Local room needed — Settings (Runtime / Provider / Model) are 127.0.0.1 only.";
+    $("settingsForm").querySelectorAll("input, select, button[type=submit]").forEach((el) => {
+      if (el.id !== "settingsClose") el.disabled = true;
+    });
+    $("settings").showModal();
+    return;
+  }
+  $("settingsForm").querySelectorAll("input, select, button[type=submit]").forEach((el) => {
+    el.disabled = false;
+  });
+  try {
+    const s = await api("/api/settings");
+    const runtime = s.thinking?.runtime || "local";
+    $("settingsRuntime").value = runtime;
+    $("settingsProvider").value = s.thinking?.provider || (runtime === "api" ? s.thinking?.api?.provider : runtime) || "local";
+    $("settingsModel").value = s.thinking?.model || "";
+    $("settingsOllamaBase").value = s.thinking?.local?.ollama?.baseUrl || "http://127.0.0.1:11434";
+    $("settingsApiBase").value = s.thinking?.api?.baseUrl || "";
+    $("settingsApiKey").value = "";
+    $("settingsApiKey").placeholder = s.thinking?.api?.apiKeySet ? `set (${s.thinking.api.apiKey || "••••"})` : "optional BYOK";
+    syncSettingsFields();
+    note.textContent =
+      "Default LLM for all members. Local room only (127.0.0.1). Override per member in Edit a member’s brain. Cloud/API never default. Keys stay in board/secrets.json — never on Pages.";
+  } catch (e) {
+    note.textContent = String(e.message || e);
+  }
+  $("settings").showModal();
+}
+
+async function saveSettings(ev) {
+  ev.preventDefault();
+  const msg = $("settingsMsg");
+  msg.hidden = false;
+  if (STATIC || !state.writable) {
+    msg.textContent = "Local room needed.";
+    return;
+  }
+  try {
+    const runtime = $("settingsRuntime").value;
+    const body = {
+      thinking: {
+        runtime,
+        provider: $("settingsProvider").value,
+        model: $("settingsModel").value.trim(),
+        local: {
+          ollama: {
+            baseUrl: $("settingsOllamaBase").value.trim(),
+            model: runtime === "ollama" ? $("settingsModel").value.trim() : "",
+          },
+        },
+        api: {
+          provider: runtime === "api" ? $("settingsProvider").value : "anthropic",
+          model: runtime === "api" ? $("settingsModel").value.trim() : "",
+          baseUrl: $("settingsApiBase").value.trim(),
+        },
+      },
+    };
+    const key = $("settingsApiKey").value.trim();
+    if (key) body.thinking.api.apiKey = key;
+    const saved = await api("/api/settings", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    $("settingsApiKey").value = "";
+    $("settingsApiKey").placeholder = saved.thinking?.api?.apiKeySet
+      ? `set (${saved.thinking.api.apiKey || "••••"})`
+      : "optional BYOK";
+    let planNote = saved.thinking?.runtime || "local";
+    try {
+      const plan = await api("/api/thinking");
+      planNote = `${plan.used?.runner || "local"} (${plan.used?.runtime || plan.used?.mode || "local"})`;
+      state.thinkingRunner = plan.used?.runner;
+    } catch {
+      /* ignore */
+    }
+    msg.textContent = `Saved — sittings use ${planNote}. Playback runner stays viewer.`;
+  } catch (e) {
+    msg.textContent = String(e.message || e);
+  }
 }
 
 async function saveTable() {
@@ -692,6 +805,7 @@ async function saveTable() {
     state.chairKey = chair;
     state.defaultSeats = defaultSeats;
     renderSeats(defaultSeats);
+    fillSittingChair();
   } catch (e) {
     $("saveMsg").textContent = String(e.message || e);
   }
@@ -720,14 +834,106 @@ function renderKnowledgeList(knowledge) {
 }
 
 function setKnowledgePaneMode(enabled, note) {
-  $("knowledgePane").classList.toggle("disabled", !enabled);
+  const pane = $("knowledgePane");
+  const cta = $("knowledgePagesCta");
+  const ingest = $("knowledgeIngest");
+  if (STATIC) {
+    pane.classList.add("pages-static");
+    pane.classList.remove("disabled");
+    if (cta) cta.hidden = false;
+    if (ingest) ingest.hidden = true;
+    $("knowledgeNote").textContent =
+      note || "Knowledge files are not on GitHub Pages. Use the local room (127.0.0.1) to ingest.";
+    return;
+  }
+  pane.classList.remove("pages-static");
+  if (cta) cta.hidden = true;
+  if (ingest) ingest.hidden = false;
+  pane.classList.toggle("disabled", !enabled);
   if (note) $("knowledgeNote").textContent = note;
+  else if (enabled) {
+    $("knowledgeNote").textContent =
+      "Drop PDFs, MD, TXT, DOCX, bib/ris, or captions into this seat's local inbox. Links append ledger.json. Distill does not call a hosted model.";
+  }
+}
+
+function showEditorMsg(text) {
+  $("editorMsg").hidden = false;
+  $("editorMsg").textContent = text;
+}
+
+function ingestBlockedReason(key) {
+  if (STATIC) {
+    return "Knowledge ingest is not available on GitHub Pages. Run npm start → http://127.0.0.1:7770";
+  }
+  if (!state.writable) return "Local room is read-only; cannot ingest.";
+  if (!key) return "Select a member first, then drop, choose a file, or add a link.";
+  return "";
+}
+
+function fillEditorMemberSelect(selected) {
+  const sel = $("editorMemberSelect");
+  if (!sel) return;
+  const keys = Object.keys(state.byKey).sort((a, b) =>
+    displayName(state.byKey[a], a).localeCompare(displayName(state.byKey[b], b)),
+  );
+  const pick = selected && state.byKey[selected] ? selected : keys[0] || "";
+  sel.innerHTML = keys
+    .map(
+      (k) =>
+        `<option value="${esc(k)}" ${k === pick ? "selected" : ""}>${esc(displayName(state.byKey[k], k))} — ${esc(state.byKey[k]?.pillar || state.byKey[k]?.archetype || k)}</option>`,
+    )
+    .join("");
+  if (pick) sel.value = pick;
+}
+
+function setEditorChrome(isNew) {
+  const memberLabel = $("editorMemberLabel");
+  const seatLabel = $("editorSeatModeLabel");
+  if (memberLabel) memberLabel.hidden = !!isNew;
+  if (seatLabel) seatLabel.hidden = !!isNew;
+  const seatMode = $("editorSeatMode");
+  if (seatMode) seatMode.disabled = !!isNew || STATIC || !state.writable;
+}
+
+async function loadSeatMode(key) {
+  const sel = $("editorSeatMode");
+  if (!sel) return;
+  if (!key || STATIC || !state.writable) {
+    sel.value = "inherit";
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  try {
+    const s = await api("/api/settings");
+    const mode = s.seats?.[key]?.mode || "inherit";
+    sel.value = ["inherit", "local", "api"].includes(mode) ? mode : "inherit";
+  } catch {
+    sel.value = "inherit";
+  }
+}
+
+async function saveSeatMode(key, mode) {
+  if (!key || STATIC || !state.writable) return null;
+  const allowed = ["inherit", "local", "api"];
+  const next = allowed.includes(mode) ? mode : "inherit";
+  return api("/api/settings", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ seats: { [key]: { mode: next } } }),
+  });
 }
 
 async function loadKnowledge(key) {
   state.editorKey = key;
-  if (STATIC || !state.writable || !key) {
-    setKnowledgePaneMode(false, "Local room needed to ingest. Chrome preview only.");
+  if (STATIC) {
+    setKnowledgePaneMode(false);
+    renderKnowledgeList({ ledger: { items: [] } });
+    return;
+  }
+  if (!state.writable || !key) {
+    setKnowledgePaneMode(false, "Local room needed to ingest.");
     renderKnowledgeList({ ledger: { items: [] } });
     return;
   }
@@ -738,79 +944,119 @@ async function loadKnowledge(key) {
   } catch (e) {
     renderKnowledgeList({ ledger: { items: [] } });
     $("knowledgeNote").textContent = String(e.message || e);
+    showEditorMsg(String(e.message || e));
   }
 }
 
 async function uploadKnowledgeFiles(files) {
   const key = state.editorKey;
-  if (!key || STATIC || !state.writable) return;
-  for (const file of files) {
-    const attachment = await fileToAttachment(file);
-    await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(attachment),
-    });
+  const blocked = ingestBlockedReason(key);
+  if (blocked) {
+    showEditorMsg(blocked);
+    return;
   }
-  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
-  renderKnowledgeList(data.knowledge);
-  $("editorMsg").hidden = false;
-  $("editorMsg").textContent = `Added ${files.length} file(s) to inbox/.`;
+  if (!files?.length) {
+    showEditorMsg("No files selected.");
+    return;
+  }
+  try {
+    for (const file of files) {
+      const attachment = await fileToAttachment(file);
+      await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(attachment),
+      });
+    }
+    const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+    renderKnowledgeList(data.knowledge);
+    showEditorMsg(`Added ${files.length} file(s) to inbox/.`);
+  } catch (e) {
+    showEditorMsg(String(e.message || e));
+  }
 }
 
 async function addKnowledgeLink() {
   const key = state.editorKey;
-  if (!key || STATIC || !state.writable) return;
-  const url = $("linkUrl").value.trim();
-  if (!url) {
-    $("editorMsg").hidden = false;
-    $("editorMsg").textContent = "Enter a URL for the citation.";
+  const blocked = ingestBlockedReason(key);
+  if (blocked) {
+    showEditorMsg(blocked);
     return;
   }
-  await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ url, title: $("linkTitle").value.trim(), kind: $("linkKind").value }),
-  });
-  $("linkUrl").value = "";
-  $("linkTitle").value = "";
-  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
-  renderKnowledgeList(data.knowledge);
-  $("editorMsg").hidden = false;
-  $("editorMsg").textContent = "Link appended to ledger.json.";
+  const url = $("linkUrl").value.trim();
+  if (!url) {
+    showEditorMsg("Enter a URL for the citation.");
+    return;
+  }
+  try {
+    await api(`/api/advisor/${encodeURIComponent(key)}/inbox`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url, title: $("linkTitle").value.trim(), kind: $("linkKind").value }),
+    });
+    $("linkUrl").value = "";
+    $("linkTitle").value = "";
+    const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+    renderKnowledgeList(data.knowledge);
+    showEditorMsg("Link appended to ledger.json.");
+  } catch (e) {
+    showEditorMsg(String(e.message || e));
+  }
 }
 
 async function removeKnowledgeItem(id) {
   const key = state.editorKey;
-  if (!key || STATIC || !state.writable) return;
-  await api(`/api/advisor/${encodeURIComponent(key)}/inbox/${encodeURIComponent(id)}`, { method: "DELETE" });
-  const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
-  renderKnowledgeList(data.knowledge);
+  const blocked = ingestBlockedReason(key);
+  if (blocked) {
+    showEditorMsg(blocked);
+    return;
+  }
+  try {
+    await api(`/api/advisor/${encodeURIComponent(key)}/inbox/${encodeURIComponent(id)}`, { method: "DELETE" });
+    const data = await api(`/api/advisor/${encodeURIComponent(key)}`);
+    renderKnowledgeList(data.knowledge);
+    showEditorMsg("Removed from inbox.");
+  } catch (e) {
+    showEditorMsg(String(e.message || e));
+  }
 }
 
 async function requestDistill() {
   const key = state.editorKey;
-  if (!key || STATIC || !state.writable) return;
-  const res = await api(`/api/advisor/${encodeURIComponent(key)}/distill`, { method: "POST" });
-  $("editorMsg").hidden = false;
-  $("editorMsg").textContent = `Distill flag written (${res.queued} queued → distill-request.md). No hosted model called.`;
+  const blocked = ingestBlockedReason(key);
+  if (blocked) {
+    showEditorMsg(blocked);
+    return;
+  }
+  try {
+    const res = await api(`/api/advisor/${encodeURIComponent(key)}/distill`, { method: "POST" });
+    showEditorMsg(`Distill flag written (${res.queued} queued → distill-request.md). No hosted model called.`);
+  } catch (e) {
+    showEditorMsg(String(e.message || e));
+  }
 }
 
 function bindKnowledgePane() {
   const drop = $("knowledgeDrop");
-  $("knowledgePick").onclick = () => $("knowledgeFiles").click();
+  $("knowledgePick").onclick = () => {
+    const blocked = ingestBlockedReason(state.editorKey);
+    if (blocked) {
+      showEditorMsg(blocked);
+      return;
+    }
+    $("knowledgeFiles").click();
+  };
   $("knowledgeFiles").onchange = () => {
-    if ($("knowledgeFiles").files.length) uploadKnowledgeFiles([...$("knowledgeFiles").files]);
+    const files = $("knowledgeFiles").files;
+    if (files?.length) {
+      uploadKnowledgeFiles([...files]).catch((e) => showEditorMsg(String(e.message || e)));
+    } else {
+      showEditorMsg("No files selected.");
+    }
     $("knowledgeFiles").value = "";
   };
-  $("linkAdd").onclick = () => addKnowledgeLink().catch((e) => {
-    $("editorMsg").hidden = false;
-    $("editorMsg").textContent = String(e.message || e);
-  });
-  $("distillBtn").onclick = () => requestDistill().catch((e) => {
-    $("editorMsg").hidden = false;
-    $("editorMsg").textContent = String(e.message || e);
-  });
+  $("linkAdd").onclick = () => addKnowledgeLink().catch((e) => showEditorMsg(String(e.message || e)));
+  $("distillBtn").onclick = () => requestDistill().catch((e) => showEditorMsg(String(e.message || e)));
   drop.addEventListener("dragover", (e) => {
     e.preventDefault();
     drop.classList.add("drag");
@@ -819,10 +1065,23 @@ function bindKnowledgePane() {
   drop.addEventListener("drop", (e) => {
     e.preventDefault();
     drop.classList.remove("drag");
-    if (e.dataTransfer?.files?.length) uploadKnowledgeFiles([...e.dataTransfer.files]).catch((err) => {
-      $("editorMsg").hidden = false;
-      $("editorMsg").textContent = String(err.message || err);
-    });
+    if (e.dataTransfer?.files?.length) {
+      uploadKnowledgeFiles([...e.dataTransfer.files]).catch((err) => showEditorMsg(String(err.message || err)));
+    } else {
+      showEditorMsg("Drop contained no files.");
+    }
+  });
+  $("editorMemberSelect")?.addEventListener("change", () => {
+    const key = $("editorMemberSelect").value;
+    if (!key || key === state.editorKey) return;
+    openEditor(key, false).catch((e) => showEditorMsg(String(e.message || e)));
+  });
+  $("editorSeatMode")?.addEventListener("change", () => {
+    const key = state.editorKey || $("editorForm")?.key?.value;
+    if (!key) return;
+    saveSeatMode(key, $("editorSeatMode").value)
+      .then(() => showEditorMsg(`Model for ${displayName(state.byKey[key], key)}: ${$("editorSeatMode").selectedOptions[0]?.text || $("editorSeatMode").value}.`))
+      .catch((e) => showEditorMsg(String(e.message || e)));
   });
 }
 
@@ -830,10 +1089,15 @@ async function openEditor(key, isNew = false) {
   const form = $("editorForm");
   form.reset();
   form.dataset.create = isNew ? "1" : "0";
-  $("editorTitle").textContent = isNew ? "Add a member" : "Edit member";
+  $("editorTitle").textContent = isNew ? "Add a member" : "Edit a member’s brain";
   form.key.readOnly = !isNew;
   populateArch();
   $("editorMsg").hidden = true;
+  setEditorChrome(isNew);
+  if (!isNew) {
+    fillEditorMemberSelect(key || state.chairKey);
+    key = $("editorMemberSelect")?.value || key || state.chairKey;
+  }
   if (!isNew && key) {
     form.key.value = key;
     try {
@@ -851,20 +1115,20 @@ async function openEditor(key, isNew = false) {
       form.hot.value = data.hot || "";
       form.sources.value = data.sources || "";
       if (STATIC) {
-        $("editorMsg").hidden = false;
-        $("editorMsg").textContent = "Knowledge files are not on GitHub Pages. Run npm start to edit _hot.md.";
+        showEditorMsg("Knowledge files are not on GitHub Pages. Run npm start to edit _hot.md.");
       }
+      await loadSeatMode(key);
       await loadKnowledge(key);
     } catch (e) {
-      $("editorMsg").hidden = false;
-      $("editorMsg").textContent = String(e.message || e);
+      showEditorMsg(String(e.message || e));
     }
   } else {
     state.editorKey = null;
     setKnowledgePaneMode(false, "Save the member first, then ingest knowledge.");
     renderKnowledgeList({ ledger: { items: [] } });
+    await loadSeatMode(null);
   }
-  $("editor").showModal();
+  if (!$("editor").open) $("editor").showModal();
 }
 
 async function saveMember(ev) {
@@ -885,9 +1149,8 @@ async function saveMember(ev) {
     hot: form.hot.value,
     sources: form.sources.value,
   };
-  $("editorMsg").hidden = false;
   if (STATIC || !state.writable) {
-    $("editorMsg").textContent = "Cannot write brains on GitHub Pages. Clone the private repo and npm start.";
+    showEditorMsg("Cannot write brains on GitHub Pages. Clone the private repo and npm start.");
     return;
   }
   try {
@@ -899,10 +1162,22 @@ async function saveMember(ev) {
     });
     const a = saved.advisor;
     state.byKey[a.key] = a;
-    $("editorMsg").textContent = `Saved ${displayName(a, a.key)}. Brain at .claude/skills/silver-board/brains/${a.slug}/`;
+    if (!create) {
+      await saveSeatMode(a.key, $("editorSeatMode")?.value || "inherit");
+      fillEditorMemberSelect(a.key);
+    }
+    showEditorMsg(`Saved ${displayName(a, a.key)}. Brain at .claude/skills/silver-board/brains/${a.slug}/`);
     fillCompose();
+    if (create) {
+      form.dataset.create = "0";
+      form.key.readOnly = true;
+      setEditorChrome(false);
+      fillEditorMemberSelect(a.key);
+      await loadSeatMode(a.key);
+      await loadKnowledge(a.key);
+    }
   } catch (e) {
-    $("editorMsg").textContent = String(e.message || e);
+    showEditorMsg(String(e.message || e));
   }
 }
 
@@ -1073,6 +1348,7 @@ async function boot() {
     state.defaultSeats = stored.defaultSeats;
   }
   renderSeats(state.defaultSeats);
+  fillSittingChair();
   setComposerMode(false);
   if (STATIC || !state.writable) {
     setComposerHint("Local room needed to run a sitting. Chrome preview only.");
@@ -1099,6 +1375,10 @@ async function boot() {
   $("guideClose").onclick = () => $("guide").close();
   $("historyClose").onclick = () => $("history").close();
   $("waitHistory").onclick = openHistory;
+  $("settingsBtn").onclick = openSettings;
+  $("settingsClose").onclick = () => $("settings").close();
+  $("settingsForm").onsubmit = saveSettings;
+  $("settingsRuntime")?.addEventListener("change", syncSettingsFields);
   $("composeBtn").onclick = () => {
     fillCompose();
     $("saveMsg").hidden = true;
