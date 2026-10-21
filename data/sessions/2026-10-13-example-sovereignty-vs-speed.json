@@ -248,7 +248,7 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 5,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
@@ -350,7 +350,7 @@
     },
     {
       "type": "signal",
-      "t": 6,
+      "t": 7,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -387,7 +387,7 @@
     },
     {
       "type": "phase",
-      "t": 6,
+      "t": 7,
       "phase": "signal",
       "label": "The Board speaks"
     }

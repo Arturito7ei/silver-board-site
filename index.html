@@ -210,35 +210,66 @@
   <dialog id="settings" class="card-dialog compose-dialog">
     <h2>Settings</h2>
     <p class="muted" id="settingsNote">Default LLM for all members. Local room only (127.0.0.1). Keys stay in <code>board/secrets.json</code> — never on Pages. Override per member in Edit a member’s brain. Cloud/API never default.</p>
+    <div class="knowledge-pages-cta" id="settingsPagesCta" hidden>
+      <p class="knowledge-cta-title">Local room required</p>
+      <p>Settings (Runtime / Provider / Model / keys / knowledge roots) are <strong>not</strong> writable on GitHub Pages (Precedence 01). The dropdowns below are intentionally unavailable here — not broken.</p>
+      <pre class="knowledge-cta-cmd">cd silver-board &amp;&amp; git pull &amp;&amp; npm start
+# open http://127.0.0.1:7770  (not arturito7ei.github.io)</pre>
+      <p>Then open Settings on localhost to change the default LLM, NVIDIA/API key, Cursor runtime, or knowledge roots.</p>
+    </div>
     <form id="settingsForm" class="editor">
-      <label>Runtime <span class="muted">(default LLM)</span>
-        <select name="runtime" id="settingsRuntime">
-          <option value="local">Local</option>
-          <option value="cursor">Cursor</option>
-          <option value="claude-code">Claude Code</option>
-          <option value="ollama">Ollama</option>
-          <option value="api">API (BYOK)</option>
-        </select>
-      </label>
-      <label>Provider
-        <select name="provider" id="settingsProvider">
-          <option value="local">Local</option>
-          <option value="cursor">Cursor</option>
-          <option value="claude-code">Claude Code</option>
-          <option value="ollama">Ollama</option>
-          <option value="anthropic">Anthropic</option>
-          <option value="openai">OpenAI</option>
-          <option value="openai-compatible">OpenAI-compatible</option>
-          <option value="custom">Custom</option>
-        </select>
-      </label>
-      <label>Model <input name="model" id="settingsModel" placeholder="inherit / local default"></label>
-      <label id="settingsOllamaBaseLabel">Ollama base URL <input name="ollamaBase" id="settingsOllamaBase" placeholder="http://127.0.0.1:11434"></label>
-      <label id="settingsApiBaseLabel">API base URL <input name="apiBase" id="settingsApiBase" placeholder="optional"></label>
-      <label class="wide" id="settingsApiKeyLabel">API key (BYOK) <input name="apiKey" id="settingsApiKey" type="password" autocomplete="off" placeholder="leave blank to keep"></label>
-      <div class="compose-row">
-        <button class="convene" type="submit">Save settings</button>
-        <button class="ghost" id="settingsClose" type="button">Close</button>
+      <div id="settingsWritable">
+        <label>Runtime <span class="muted">(default LLM for all members)</span>
+          <select name="runtime" id="settingsRuntime">
+            <option value="local">Local</option>
+            <option value="cursor">Cursor (open in Cursor / agent runtime)</option>
+            <option value="claude-code">Claude Code</option>
+            <option value="ollama">Ollama</option>
+            <option value="api">API (BYOK)</option>
+          </select>
+        </label>
+        <p class="muted settings-hint" id="settingsRuntimeHint" hidden></p>
+        <label id="settingsProviderLabel">Provider
+          <select name="provider" id="settingsProvider">
+            <option value="local">Local</option>
+            <option value="cursor">Cursor</option>
+            <option value="claude-code">Claude Code</option>
+            <option value="ollama">Ollama</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="openai">OpenAI</option>
+            <option value="nvidia">NVIDIA (NIM / OpenAI-compatible)</option>
+            <option value="openai-compatible">OpenAI-compatible</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>Model <input name="model" id="settingsModel" placeholder="inherit / local default"></label>
+        <label id="settingsOllamaBaseLabel">Ollama base URL <input name="ollamaBase" id="settingsOllamaBase" placeholder="http://127.0.0.1:11434"></label>
+        <label id="settingsApiBaseLabel">API base URL <input name="apiBase" id="settingsApiBase" placeholder="https://integrate.api.nvidia.com/v1"></label>
+        <label class="wide" id="settingsApiKeyLabel">API key (BYOK) <input name="apiKey" id="settingsApiKey" type="password" autocomplete="off" placeholder="leave blank to keep"></label>
+        <h3 class="settings-section">Knowledge roots <span class="muted">(localhost)</span></h3>
+        <p class="muted settings-hint">Local folder or Obsidian vault path — files stay on this machine. Drive Desktop sync into a local folder works without a Google connector (API connector = HOLD).</p>
+        <label class="wide">Local folder path
+          <input name="localFolder" id="settingsLocalFolder" placeholder="/Users/you/Books or Drive Desktop sync folder" autocomplete="off">
+        </label>
+        <label>Link folder into seat
+          <select name="localFolderSeat" id="settingsLocalFolderSeat"></select>
+        </label>
+        <label class="settings-check"><input type="checkbox" name="watchLocal" id="settingsWatchLocal"> Watch folder for new files (optional)</label>
+        <label class="wide">Obsidian vault path <span class="muted">(read-only .md)</span>
+          <input name="obsidianVault" id="settingsObsidianVault" placeholder="/Users/you/Obsidian/MyVault" autocomplete="off">
+        </label>
+        <div class="compose-row">
+          <button class="ghost" type="button" id="settingsLinkLocal">Link local folder → seat</button>
+          <button class="ghost" type="button" id="settingsLinkVault">Link vault .md → seat</button>
+        </div>
+        <p class="muted settings-hint" id="settingsRootsStatus" hidden></p>
+        <div class="compose-row">
+          <button class="convene" type="submit">Save settings</button>
+          <button class="ghost" id="settingsClose" type="button">Close</button>
+        </div>
+      </div>
+      <div class="compose-row" id="settingsCloseOnly" hidden>
+        <button class="ghost" id="settingsClosePages" type="button">Close</button>
       </div>
       <p class="save-msg" id="settingsMsg" hidden></p>
     </form>

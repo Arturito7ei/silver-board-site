@@ -684,6 +684,17 @@ function fillCompose() {
     : "Six seats plus the Chair. Saving writes board/roster.json and keeps one voice (Charter Art. 1).";
 }
 
+const NVIDIA_BASE_DEFAULT = "https://integrate.api.nvidia.com/v1";
+
+function fillSettingsSeatSelect(selected) {
+  const sel = $("settingsLocalFolderSeat");
+  if (!sel) return;
+  const current = selected || sel.value || state.chairKey || "dalio";
+  sel.innerHTML = advisorOptions(current);
+  if (![...sel.options].some((o) => o.value === current)) sel.value = state.chairKey || "dalio";
+  else sel.value = current;
+}
+
 function syncSettingsFields() {
   const runtime = $("settingsRuntime")?.value || "local";
   const provider = $("settingsProvider");
@@ -692,40 +703,123 @@ function syncSettingsFields() {
   $("settingsOllamaBaseLabel").hidden = !showOllama;
   $("settingsApiBaseLabel").hidden = !showApi;
   $("settingsApiKeyLabel").hidden = !showApi;
-  if (runtime !== "api" && provider) {
+  const hint = $("settingsRuntimeHint");
+  if (hint) {
+    if (runtime === "cursor") {
+      hint.hidden = false;
+      hint.textContent =
+        "Cursor = open this repo in Cursor and chair with the agent runtime (Composer) — same idea as Buzz Agents. Sittings stamp thinking-handoff.md.";
+    } else if (runtime === "api") {
+      hint.hidden = false;
+      hint.textContent =
+        "API (BYOK): pick Provider (Anthropic, OpenAI, NVIDIA, …), Model, and Key. Without a key, sittings fall back to local — cloud never defaults.";
+    } else {
+      hint.hidden = true;
+      hint.textContent = "";
+    }
+  }
+  if (!provider) return;
+  if (runtime === "api") {
+    provider.disabled = false;
+    $("settingsModel").disabled = false;
+    $("settingsApiKey").disabled = false;
+    $("settingsApiBase").disabled = false;
+    const apiOk = ["anthropic", "openai", "nvidia", "openai-compatible", "custom", "ollama"];
+    if (!apiOk.includes(provider.value)) provider.value = "anthropic";
+    if (provider.value === "nvidia" && !$("settingsApiBase").value.trim()) {
+      $("settingsApiBase").value = NVIDIA_BASE_DEFAULT;
+    }
+  } else {
     const map = { local: "local", cursor: "cursor", "claude-code": "claude-code", ollama: "ollama" };
     if (map[runtime]) provider.value = map[runtime];
+    $("settingsModel").disabled = false;
+    if (showOllama) $("settingsOllamaBase").disabled = false;
+  }
+}
+
+function onSettingsProviderChange() {
+  const runtime = $("settingsRuntime")?.value || "local";
+  if (runtime !== "api") return;
+  const provider = $("settingsProvider")?.value;
+  if (provider === "nvidia") {
+    const base = $("settingsApiBase");
+    if (base && (!base.value.trim() || base.value.includes("openai.com"))) {
+      base.value = NVIDIA_BASE_DEFAULT;
+      base.placeholder = NVIDIA_BASE_DEFAULT;
+    }
+  }
+}
+
+async function refreshRootsStatus() {
+  const el = $("settingsRootsStatus");
+  if (!el || STATIC || !state.writable) return;
+  try {
+    const roots = await api("/api/knowledge/roots");
+    const local = roots.localFolder?.configured
+      ? roots.localFolder.exists
+        ? `${roots.localFolder.fileCount} file(s)`
+        : roots.localFolder.error || "missing"
+      : "not set";
+    const vault = roots.obsidianVault?.configured
+      ? roots.obsidianVault.exists
+        ? `${roots.obsidianVault.fileCount} .md`
+        : roots.obsidianVault.error || "missing"
+      : "not set";
+    el.hidden = false;
+    el.textContent = `Roots — local: ${local}; Obsidian: ${vault}. Seat: ${roots.seat || "—"}.`;
+  } catch (e) {
+    el.hidden = false;
+    el.textContent = String(e.message || e);
   }
 }
 
 async function openSettings() {
   const note = $("settingsNote");
   const msg = $("settingsMsg");
+  const dlg = $("settings");
+  const cta = $("settingsPagesCta");
   msg.hidden = true;
   if (STATIC || !state.writable) {
-    note.textContent = "Local room needed — Settings (Runtime / Provider / Model) are 127.0.0.1 only.";
-    $("settingsForm").querySelectorAll("input, select, button[type=submit]").forEach((el) => {
-      if (el.id !== "settingsClose") el.disabled = true;
-    });
+    note.textContent = "Local room needed — Settings write paths are 127.0.0.1 only (Precedence 01).";
+    dlg.classList.add("pages-static");
+    if (cta) cta.hidden = false;
     $("settings").showModal();
     return;
   }
-  $("settingsForm").querySelectorAll("input, select, button[type=submit]").forEach((el) => {
+  dlg.classList.remove("pages-static");
+  if (cta) cta.hidden = true;
+  $("settingsForm").querySelectorAll("input, select, button").forEach((el) => {
     el.disabled = false;
   });
+  fillSettingsSeatSelect(state.chairKey);
   try {
     const s = await api("/api/settings");
     const runtime = s.thinking?.runtime || "local";
     $("settingsRuntime").value = runtime;
-    $("settingsProvider").value = s.thinking?.provider || (runtime === "api" ? s.thinking?.api?.provider : runtime) || "local";
+    const prov =
+      s.thinking?.provider ||
+      (runtime === "api" ? s.thinking?.api?.provider : runtime) ||
+      "local";
+    $("settingsProvider").value = prov;
     $("settingsModel").value = s.thinking?.model || "";
     $("settingsOllamaBase").value = s.thinking?.local?.ollama?.baseUrl || "http://127.0.0.1:11434";
-    $("settingsApiBase").value = s.thinking?.api?.baseUrl || "";
+    $("settingsApiBase").value =
+      s.thinking?.api?.baseUrl || (prov === "nvidia" ? NVIDIA_BASE_DEFAULT : "");
     $("settingsApiKey").value = "";
-    $("settingsApiKey").placeholder = s.thinking?.api?.apiKeySet ? `set (${s.thinking.api.apiKey || "••••"})` : "optional BYOK";
+    $("settingsApiKey").placeholder = s.thinking?.api?.apiKeySet
+      ? `set (${s.thinking.api.apiKey || "••••"})`
+      : "optional BYOK — NVIDIA / Anthropic / OpenAI";
+    $("settingsLocalFolder").value = s.knowledge?.localFolder || "";
+    $("settingsObsidianVault").value = s.knowledge?.obsidianVault || "";
+    $("settingsWatchLocal").checked = !!s.knowledge?.watchLocal;
+    fillSettingsSeatSelect(s.knowledge?.localFolderSeat || state.chairKey);
+    if (s.presets?.nvidiaBaseUrl) {
+      $("settingsApiBase").placeholder = s.presets.nvidiaBaseUrl;
+    }
     syncSettingsFields();
     note.textContent =
       "Default LLM for all members. Local room only (127.0.0.1). Override per member in Edit a member’s brain. Cloud/API never default. Keys stay in board/secrets.json — never on Pages.";
+    await refreshRootsStatus();
   } catch (e) {
     note.textContent = String(e.message || e);
   }
@@ -737,15 +831,18 @@ async function saveSettings(ev) {
   const msg = $("settingsMsg");
   msg.hidden = false;
   if (STATIC || !state.writable) {
-    msg.textContent = "Local room needed.";
+    msg.textContent = "Local room needed — open http://127.0.0.1:7770";
     return;
   }
   try {
     const runtime = $("settingsRuntime").value;
+    const provider = $("settingsProvider").value;
+    let apiBase = $("settingsApiBase").value.trim();
+    if (runtime === "api" && provider === "nvidia" && !apiBase) apiBase = NVIDIA_BASE_DEFAULT;
     const body = {
       thinking: {
         runtime,
-        provider: $("settingsProvider").value,
+        provider,
         model: $("settingsModel").value.trim(),
         local: {
           ollama: {
@@ -754,10 +851,16 @@ async function saveSettings(ev) {
           },
         },
         api: {
-          provider: runtime === "api" ? $("settingsProvider").value : "anthropic",
+          provider: runtime === "api" ? provider : "anthropic",
           model: runtime === "api" ? $("settingsModel").value.trim() : "",
-          baseUrl: $("settingsApiBase").value.trim(),
+          baseUrl: apiBase,
         },
+      },
+      knowledge: {
+        localFolder: $("settingsLocalFolder").value.trim(),
+        localFolderSeat: $("settingsLocalFolderSeat").value,
+        watchLocal: !!$("settingsWatchLocal").checked,
+        obsidianVault: $("settingsObsidianVault").value.trim(),
       },
     };
     const key = $("settingsApiKey").value.trim();
@@ -770,7 +873,7 @@ async function saveSettings(ev) {
     $("settingsApiKey").value = "";
     $("settingsApiKey").placeholder = saved.thinking?.api?.apiKeySet
       ? `set (${saved.thinking.api.apiKey || "••••"})`
-      : "optional BYOK";
+      : "optional BYOK — NVIDIA / Anthropic / OpenAI";
     let planNote = saved.thinking?.runtime || "local";
     try {
       const plan = await api("/api/thinking");
@@ -779,7 +882,32 @@ async function saveSettings(ev) {
     } catch {
       /* ignore */
     }
+    await refreshRootsStatus();
     msg.textContent = `Saved — sittings use ${planNote}. Playback runner stays viewer.`;
+  } catch (e) {
+    msg.textContent = String(e.message || e);
+  }
+}
+
+async function linkSettingsRoot(source) {
+  const msg = $("settingsMsg");
+  msg.hidden = false;
+  if (STATIC || !state.writable) {
+    msg.textContent = "Local room needed — open http://127.0.0.1:7770";
+    return;
+  }
+  try {
+    // Persist paths first so link sees configured roots
+    await saveSettings({ preventDefault() {} });
+    const key = $("settingsLocalFolderSeat").value || state.chairKey;
+    const result = await api("/api/knowledge/roots/link", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ source, key, limit: 50 }),
+    });
+    await refreshRootsStatus();
+    msg.textContent = `Linked ${result.linked} from ${source} → ${key}` +
+      (result.skipped ? ` (${result.skipped} skipped)` : "");
   } catch (e) {
     msg.textContent = String(e.message || e);
   }
@@ -1377,8 +1505,12 @@ async function boot() {
   $("waitHistory").onclick = openHistory;
   $("settingsBtn").onclick = openSettings;
   $("settingsClose").onclick = () => $("settings").close();
+  $("settingsClosePages")?.addEventListener("click", () => $("settings").close());
   $("settingsForm").onsubmit = saveSettings;
   $("settingsRuntime")?.addEventListener("change", syncSettingsFields);
+  $("settingsProvider")?.addEventListener("change", onSettingsProviderChange);
+  $("settingsLinkLocal")?.addEventListener("click", () => linkSettingsRoot("local"));
+  $("settingsLinkVault")?.addEventListener("click", () => linkSettingsRoot("obsidian"));
   $("composeBtn").onclick = () => {
     fillCompose();
     $("saveMsg").hidden = true;

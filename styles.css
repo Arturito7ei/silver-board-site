@@ -662,6 +662,29 @@ code {
   font-weight: 500;
 }
 .knowledge-note { font-size: 0.78rem; margin: 0 0 0.65rem; }
+.settings-section {
+  grid-column: 1 / -1;
+  margin: 0.85rem 0 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--silver);
+  letter-spacing: 0.02em;
+}
+.settings-hint {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  margin: 0 0 0.35rem;
+  line-height: 1.4;
+}
+.settings-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+}
+.settings-check input { width: auto; }
+#settings.pages-static #settingsWritable { display: none; }
+#settings.pages-static #settingsCloseOnly { display: flex; }
 .knowledge-pages-cta {
   margin: 0.5rem 0 0;
   padding: 0.85rem 1rem;
@@ -669,6 +692,7 @@ code {
   border-radius: 10px;
   background: rgba(196, 163, 90, 0.08);
 }
+#settings .knowledge-pages-cta { margin-bottom: 0.75rem; }
 .knowledge-cta-title {
   margin: 0 0 0.4rem;
   font-weight: 600;
