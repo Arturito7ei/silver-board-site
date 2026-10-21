@@ -152,7 +152,7 @@ function layoutStage() {
   Object.assign(t.style, { left: `${cx - rx}px`, top: `${cy - ry}px`, width: `${rx * 2}px`, height: `${ry * 2}px` });
   const totem = $("tableTotem");
   if (totem) {
-    const tw = rx * 2 * 0.32;
+    const tw = rx * 2 * 0.16;
     const th = tw * (590 / 742);
     Object.assign(totem.style, {
       left: `${cx - tw / 2}px`,
