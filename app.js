@@ -267,8 +267,40 @@ function capAvatar(s) {
   wrap.appendChild(img);
 }
 
+function hideSittingStatus() {
+  const el = $("sittingStatus");
+  if (el) el.hidden = true;
+}
+
+function showSittingStatus(ev = {}) {
+  const el = $("sittingStatus");
+  if (!el) return;
+  $("waiting").hidden = true;
+  $("caption").hidden = true;
+  $("signalCard").hidden = true;
+  el.hidden = false;
+  const runner = ev.runner || "local";
+  const stateName = ev.state || "awaiting_chair";
+  $("sittingStatusPulse").textContent = stateName === "awaiting_chair" ? "Awaiting chair" : stateName;
+  $("sittingStatusTitle").textContent =
+    stateName === "awaiting_chair" ? "Sitting stamped — no auto-answer yet" : "Sitting status";
+  $("sittingStatusNote").textContent =
+    ev.note ||
+    "The room is a viewer until the chair writes round files. Empty feed is not a silent bug.";
+  $("sittingStatusMeta").textContent = `Runner: ${runner} · playback: ${ev.playbackRunner || "viewer"} · state: ${stateName}`;
+  const pathEl = $("sittingStatusPath");
+  if (ev.handoff) {
+    pathEl.hidden = false;
+    pathEl.textContent = ev.handoff;
+  } else {
+    pathEl.hidden = true;
+    pathEl.textContent = "";
+  }
+}
+
 function showCaption(seat, ev) {
   $("waiting").hidden = true;
+  hideSittingStatus();
   $("signalCard").hidden = true;
   $("caption").hidden = false;
   const s = state.byKey[seat] || { initials: "?", short: seat, color: "#c5cdd8", key: seat };
@@ -324,6 +356,7 @@ function setComposerMode(live) {
 
 function showSignal(sig) {
   $("waiting").hidden = true;
+  hideSittingStatus();
   $("caption").hidden = true;
   const card = $("signalCard");
   card.hidden = false;
@@ -387,12 +420,18 @@ function renderTensions(ev) {
 
 function onEvent(ev) {
   if (ev.type === "setup") applySetup(ev);
+  if (ev.type === "status") {
+    if (ev.state === "awaiting_chair") showSittingStatus(ev);
+    else hideSittingStatus();
+  }
   if (ev.type === "phase") {
     const map = { opening: "opening", tensions: "tensions", synthesis: "synthesis", ratify: "ratify", signal: "signal" };
     if (map[ev.phase]) setStep(map[ev.phase]);
+    if (ev.phase && ev.phase !== "opening") hideSittingStatus();
   }
   if (ev.type === "seat_done") showCaption(ev.seat, ev);
   if (ev.type === "tensions") {
+    hideSittingStatus();
     renderTensions(ev);
     setStep("tensions");
   }
@@ -432,18 +471,24 @@ function enqueueEvents(events, replay = false) {
   if (!state.playing) drainQueue();
 }
 
-function resetStage() {
+function resetStage({ preserveSittingStatus = false } = {}) {
   stopTalk();
   $("stage").classList.remove("live");
   $("spot").classList.remove("on");
-  $("waiting").hidden = false;
+  if (preserveSittingStatus) {
+    $("waiting").hidden = true;
+  } else {
+    $("waiting").hidden = false;
+    hideSittingStatus();
+  }
   $("caption").hidden = true;
   const card = $("signalCard");
   card.hidden = true;
   card.classList.remove("minimized", "expanded");
   setComposerMode(false);
   $("tensionBox").innerHTML = '<span class="muted">Waiting for the field.</span>';
-  $("feed").innerHTML = '<div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>';
+  $("feed").innerHTML =
+    '<div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>';
   for (const li of $("stepper").querySelectorAll("li")) li.classList.remove("on", "done");
 }
 
@@ -504,7 +549,19 @@ async function submitQuery(ev) {
     renderAttachList();
     $("queryInput").value = "";
     setComposerHint(res.hint || "Sitting opened. Run /silver-board in Claude Code.", true);
-    if (res.id) stream(res.id, false);
+    if (res.id) {
+      const awaiting = res.state === "awaiting_chair" || Boolean(res.handoff);
+      if (awaiting) {
+        showSittingStatus({
+          state: res.state || "awaiting_chair",
+          runner: res.thinking?.runner || "local",
+          playbackRunner: res.runner || "viewer",
+          handoff: res.handoff,
+          note: res.hint,
+        });
+      }
+      stream(res.id, false, { preserveSittingStatus: awaiting });
+    }
   } catch (e) {
     setComposerHint(String(e.message || e));
   } finally {
@@ -595,12 +652,12 @@ function bindSignalCard() {
   };
 }
 
-function stream(id, replay = false) {
+function stream(id, replay = false, opts = {}) {
   if (state.es) state.es.close();
   state.current = id;
   state.queue = [];
   state.playing = false;
-  resetStage();
+  resetStage({ preserveSittingStatus: !!opts.preserveSittingStatus });
   if (STATIC) {
     api(`/api/sessions/${id}`).then((data) => enqueueEvents(data.events || [], true));
     return;
@@ -773,6 +830,49 @@ async function refreshRootsStatus() {
   }
 }
 
+function renderOperatorLog(entries = []) {
+  const list = $("settingsOperatorLog");
+  if (!list) return;
+  if (!entries.length) {
+    list.innerHTML = "";
+    return;
+  }
+  list.innerHTML = entries
+    .slice(0, 40)
+    .map((e) => {
+      const level = String(e.level || "info");
+      const event = e.event || e.stage || "event";
+      const when = e.ts ? String(e.ts).replace("T", " ").slice(0, 19) : "—";
+      const hint = e.hint ? `<p class="ol-hint">${esc(e.hint)}</p>` : "";
+      return `<li class="ol-level-${esc(level)}"><div class="ol-head"><span class="ol-event">${esc(event)}</span><span>${esc(level)}</span><span>${esc(when)}</span></div><p class="ol-msg">${esc(e.message || "")}</p>${hint}</li>`;
+    })
+    .join("");
+}
+
+async function refreshOperatorLog() {
+  const depsHint = $("settingsDepsHint");
+  if (STATIC || !state.writable) {
+    renderOperatorLog([]);
+    if (depsHint) depsHint.hidden = true;
+    return;
+  }
+  try {
+    if (depsHint) {
+      if (state.deps && state.deps.extractOk === false) {
+        depsHint.hidden = false;
+        depsHint.textContent = state.deps.hint || `Missing deps: ${(state.deps.missing || []).join(", ")}. Run npm install.`;
+      } else {
+        depsHint.hidden = true;
+        depsHint.textContent = "";
+      }
+    }
+    const log = await api("/api/operator-log?limit=40");
+    renderOperatorLog(log.entries || []);
+  } catch (e) {
+    renderOperatorLog([{ level: "error", event: "operator_log_read", message: String(e.message || e) }]);
+  }
+}
+
 async function openSettings() {
   const note = $("settingsNote");
   const msg = $("settingsMsg");
@@ -820,6 +920,7 @@ async function openSettings() {
     note.textContent =
       "Default LLM for all members. Local room only (127.0.0.1). Override per member in Edit a member’s brain. Cloud/API never default. Keys stay in board/secrets.json — never on Pages.";
     await refreshRootsStatus();
+    await refreshOperatorLog();
   } catch (e) {
     note.textContent = String(e.message || e);
   }
@@ -1353,8 +1454,16 @@ function renderSidebarSessions(sessions, filter = "") {
   });
   const order = ["Today", "Yesterday", "Previous 7 days", "Older"];
   const folders = [
-    { id: "default", label: "Default table", sessions: items.filter((s) => s.status === "live" || s.status === "running") },
-    { id: "past", label: "Past sittings", sessions: items.filter((s) => s.status !== "live" && s.status !== "running") },
+    {
+      id: "default",
+      label: "Default table",
+      sessions: items.filter((s) => s.status === "live" || s.status === "running" || s.status === "awaiting_chair"),
+    },
+    {
+      id: "past",
+      label: "Past sittings",
+      sessions: items.filter((s) => s.status !== "live" && s.status !== "running" && s.status !== "awaiting_chair"),
+    },
   ];
   let html = "";
   for (const folder of folders) {
@@ -1461,6 +1570,7 @@ async function boot() {
   state.chairKey = seats.chairKey || seats.chair?.key || "dalio";
   state.defaultSeats = seats.defaultSeats || [];
   state.writable = !!seats.writable && !STATIC;
+  state.deps = seats.deps || null;
   if (seats.disclaimer) {
     $("disclaimer").textContent = seats.disclaimer;
   }
@@ -1480,6 +1590,8 @@ async function boot() {
   setComposerMode(false);
   if (STATIC || !state.writable) {
     setComposerHint("Local room needed to run a sitting. Chrome preview only.");
+  } else if (state.deps?.extractOk === false && state.deps.hint) {
+    setComposerHint(state.deps.hint);
   } else {
     setComposerHint("Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
   }
@@ -1511,6 +1623,7 @@ async function boot() {
   $("settingsProvider")?.addEventListener("change", onSettingsProviderChange);
   $("settingsLinkLocal")?.addEventListener("click", () => linkSettingsRoot("local"));
   $("settingsLinkVault")?.addEventListener("click", () => linkSettingsRoot("obsidian"));
+  $("settingsRefreshLog")?.addEventListener("click", () => refreshOperatorLog());
   $("composeBtn").onclick = () => {
     fillCompose();
     $("saveMsg").hidden = true;

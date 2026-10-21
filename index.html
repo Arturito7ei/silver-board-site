@@ -110,6 +110,13 @@
                   <button class="ghost" type="button" id="waitHistory">Watch a past sitting</button>
                 </div>
               </div>
+              <div class="sitting-status" id="sittingStatus" hidden>
+                <p class="pulse" id="sittingStatusPulse">Awaiting chair</p>
+                <h2 id="sittingStatusTitle">Sitting stamped — no auto-answer yet</h2>
+                <p class="waiting-secondary" id="sittingStatusNote"></p>
+                <p class="sitting-status-meta" id="sittingStatusMeta"></p>
+                <pre class="sitting-status-path" id="sittingStatusPath" hidden></pre>
+              </div>
               <div class="caption" id="caption" hidden>
                 <div class="cap-head">
                   <span class="cap-av" id="capAv"></span>
@@ -263,6 +270,13 @@
           <button class="ghost" type="button" id="settingsLinkVault">Link vault .md → seat</button>
         </div>
         <p class="muted settings-hint" id="settingsRootsStatus" hidden></p>
+        <h3 class="settings-section">Operator log <span class="muted">(localhost)</span></h3>
+        <p class="muted settings-hint">Where extract / deps / sitting stamp failures land — never silent. File: <code>board/operator-log.jsonl</code></p>
+        <p class="muted settings-hint" id="settingsDepsHint" hidden></p>
+        <ul class="operator-log-list" id="settingsOperatorLog" aria-live="polite"></ul>
+        <div class="compose-row">
+          <button class="ghost" type="button" id="settingsRefreshLog">Refresh log</button>
+        </div>
         <div class="compose-row">
           <button class="convene" type="submit">Save settings</button>
           <button class="ghost" id="settingsClose" type="button">Close</button>

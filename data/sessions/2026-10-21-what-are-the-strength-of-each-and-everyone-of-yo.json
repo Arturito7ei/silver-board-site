@@ -1,0 +1,65 @@
+{
+  "id": "2026-10-21-what-are-the-strength-of-each-and-everyone-of-yo",
+  "title": "What are the Strength of each and everyone of you?",
+  "mode": "convene",
+  "status": "awaiting_chair",
+  "events": [
+    {
+      "type": "setup",
+      "t": 2,
+      "title": "What are the Strength of each and everyone of you?",
+      "decision": "What are the Strength of each and everyone of you?",
+      "brief": "What are the Strength of each and everyone of you?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Proceed"
+        },
+        {
+          "id": "B",
+          "label": "Wait or reshape"
+        },
+        {
+          "id": "C",
+          "label": "Do not proceed"
+        }
+      ],
+      "assumptions": [
+        "Options are placeholders until the Chair reframes (assumed)"
+      ],
+      "weights": {},
+      "seats": [
+        "buffett",
+        "suntzu",
+        "bezos",
+        "taleb",
+        "watts",
+        "rule"
+      ],
+      "chair": "dalio",
+      "mode": "convene",
+      "thinking": {
+        "runner": "cursor",
+        "mode": "local",
+        "provider": "cursor"
+      },
+      "handoff": "sessions/2026-10-21-what-are-the-strength-of-each-and-everyone-of-yo/thinking-handoff.md",
+      "state": "awaiting_chair"
+    },
+    {
+      "type": "phase",
+      "t": 2,
+      "phase": "opening",
+      "label": "Awaiting chair"
+    },
+    {
+      "type": "status",
+      "t": 2,
+      "state": "awaiting_chair",
+      "runner": "cursor",
+      "playbackRunner": "viewer",
+      "handoff": "sessions/2026-10-21-what-are-the-strength-of-each-and-everyone-of-yo/thinking-handoff.md",
+      "note": "Cursor runtime stamps a handoff only — open this repo in Cursor and chair from thinking-handoff.md. The room does not auto-answer."
+    }
+  ]
+}

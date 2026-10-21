@@ -476,6 +476,77 @@ code {
 .waiting h2 { font-family: var(--font-brand); font-size: 1.05rem; font-weight: 500; margin: 0.35rem 0; line-height: 1.35; }
 .waiting p, .waiting-secondary { color: var(--muted); font-size: 0.82rem; line-height: 1.45; margin: 0.35rem 0; }
 .waiting .row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-top: 0.85rem; }
+.sitting-status {
+  max-width: 30rem;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(196, 163, 90, 0.35);
+  border-radius: 14px;
+  background: rgba(14, 18, 26, 0.88);
+  box-shadow: 0 12px 40px var(--shadow);
+  animation: rise 0.35s var(--ease) both;
+}
+.sitting-status h2 {
+  font-family: var(--font-brand);
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin: 0.35rem 0;
+  line-height: 1.35;
+}
+.sitting-status-meta { color: var(--gold); font-size: 0.72rem; letter-spacing: 0.04em; margin: 0.5rem 0 0.25rem; }
+.sitting-status-path {
+  margin: 0.4rem 0 0;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 6rem;
+  overflow: auto;
+}
+.operator-log-list {
+  list-style: none;
+  margin: 0.35rem 0 0.5rem;
+  padding: 0;
+  max-height: 11rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.operator-log-list:empty::after {
+  content: "No operator events yet.";
+  display: block;
+  padding: 0.65rem 0.75rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.operator-log-list li {
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  text-align: left;
+}
+.operator-log-list li:last-child { border-bottom: none; }
+.operator-log-list .ol-head {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.operator-log-list .ol-event { color: var(--gold); font-weight: 600; }
+.operator-log-list .ol-level-error .ol-event { color: #e08a7a; }
+.operator-log-list .ol-level-warn .ol-event { color: #d4b06a; }
+.operator-log-list .ol-msg { margin: 0.15rem 0 0; color: var(--ink); }
+.operator-log-list .ol-hint { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.68rem; }
 .pulse {
   color: var(--gold); letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.62rem;
   animation: fade-pulse 2s ease-in-out infinite;
