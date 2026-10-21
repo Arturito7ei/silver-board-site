@@ -1,16 +1,22 @@
 {
   "sessions": [
     {
+      "id": "2026-10-21-example-20b-scale-path-thierry",
+      "title": "Which $20B path for Thierry / 7Ei?",
+      "mode": "convene",
+      "status": "done"
+    },
+    {
+      "id": "2026-10-21-which-20b-scale-path-should-thierry-arys-ruiz-7e",
+      "title": "Which $20B path for Thierry / 7Ei?",
+      "mode": "convene",
+      "status": "done"
+    },
+    {
       "id": "2026-10-21-what-are-the-strength-of-each-and-everyone-of-yo",
       "title": "What are the Strength of each and everyone of you?",
       "mode": "convene",
       "status": "awaiting_chair"
-    },
-    {
-      "id": "2026-10-13-example-sovereignty-vs-speed",
-      "title": "Room now, or protocol only?",
-      "mode": "convene",
-      "status": "done"
     }
   ],
   "running": null,

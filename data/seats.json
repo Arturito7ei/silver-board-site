@@ -13,12 +13,12 @@
     "color": "#d7dde6"
   },
   "defaultSeats": [
-    "buffett",
-    "suntzu",
+    "musk",
+    "altman",
     "bezos",
-    "taleb",
-    "watts",
-    "rule"
+    "amodei",
+    "jung",
+    "suntzu"
   ],
   "advisors": [
     {

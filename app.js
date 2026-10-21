@@ -5,6 +5,10 @@ const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signa
 const TABLE_STORE = "silver-board-table";
 const SIDEBAR_STORE = "silver-board-sidebar";
 const FIELD_STORE = "silver-board-field";
+/** Launch demo ask — composer suggestion + canned first paint */
+const DEMO_QUERY =
+  "Produce $20B-scale ideas for Thierry Arys Ruiz — prioritise technology, commodity trading, or finance";
+const DEMO_ID = "2026-10-21-example-20b-scale-path-thierry";
 
 const state = {
   seats: [],
@@ -390,11 +394,31 @@ function showSignal(sig) {
 
 function applySetup(d) {
   setComposerMode(true);
-  $("topicTitle").textContent = d.title || d.decision || "Sitting";
+  const title = d.title || d.decision || "Sitting";
+  const demoTag = d.demoLabel || (d.demo ? "Demo sitting" : "");
+  $("topicTitle").textContent = demoTag ? `${demoTag} · ${title}` : title;
   $("options").innerHTML = (d.options || []).map((o) => `<span class="opt">${esc(o.id)}: ${esc(o.label)}</span>`).join("");
   if (d.chair) state.chairKey = d.chair;
   renderSeats(d.seats || state.defaultSeats);
   setStep("opening");
+}
+
+function pickLaunchDemo(sessions) {
+  const list = sessions || [];
+  return (
+    list.find((s) => s.demo) ||
+    list.find((s) => s.id === DEMO_ID) ||
+    list.find((s) => String(s.id).includes("example-20b")) ||
+    list.find((s) => String(s.id).includes("example"))
+  );
+}
+
+function sessionListLabel(s) {
+  const title = s.title || s.id;
+  if (s.demo || s.demoLabel || s.id === DEMO_ID) {
+    return `${s.demoLabel || "Demo sitting"} · ${title}`;
+  }
+  return title;
 }
 
 function renderTensions(ev) {
@@ -1486,7 +1510,7 @@ function renderSidebarSessions(sessions, filter = "") {
         html += list
           .map(
             (s) =>
-              `<li><button type="button" data-id="${esc(s.id)}" class="${s.id === state.current ? "active" : ""}">${esc(s.title || s.id)}</button></li>`
+              `<li><button type="button" data-id="${esc(s.id)}" class="${s.id === state.current ? "active" : ""}">${esc(sessionListLabel(s))}</button></li>`
           )
           .join("");
         html += `</ul></div>`;
@@ -1516,7 +1540,10 @@ async function openHistory() {
   const data = await refreshSessions();
   $("historyList").innerHTML =
     (data.sessions || [])
-      .map((s) => `<li><button class="ghost replay" data-id="${esc(s.id)}" type="button">${esc(s.title || s.id)}</button> <span class="muted">${esc(s.status)}</span></li>`)
+      .map(
+        (s) =>
+          `<li><button class="ghost replay" data-id="${esc(s.id)}" type="button">${esc(sessionListLabel(s))}</button> <span class="muted">${esc(s.status)}</span></li>`
+      )
       .join("") || "<li class='muted'>None yet</li>";
   bindSessionClicks($("historyList"));
   $("history").showModal();
@@ -1557,6 +1584,7 @@ function bindSidebar() {
     if (state.es) state.es.close();
     state.current = null;
     resetStage();
+    $("queryInput").placeholder = DEMO_QUERY;
     $("queryInput").focus();
     setComposerHint(STATIC || !state.writable ? "Local room needed to run a sitting. Chrome preview only." : "Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
   };
@@ -1649,10 +1677,15 @@ async function boot() {
     };
   });
 
+  $("queryInput").placeholder = DEMO_QUERY;
+
   const sess = await refreshSessions();
   const live = sess.live || sess.running;
   if (live) stream(live, false);
-  else if (STATIC && sess.sessions?.[0]) stream(sess.sessions[0].id, true);
+  else {
+    const demo = pickLaunchDemo(sess.sessions);
+    if (demo) stream(demo.id, true);
+  }
 
   if (!STATIC) {
     setInterval(async () => {
