@@ -357,6 +357,10 @@
           <p>Then Edit knowledge → drop the book <em>or</em> Add link (kind Book).</p>
         </div>
         <div class="knowledge-ingest" id="knowledgeIngest">
+          <div class="knowledge-search" id="knowledgeSearchWrap">
+            <input type="search" id="knowledgeSearch" placeholder="Search hot / sources / inbox…" aria-label="Search seat knowledge" autocomplete="off">
+            <ul class="knowledge-search-hits" id="knowledgeSearchHits" hidden></ul>
+          </div>
           <div class="knowledge-drop" id="knowledgeDrop" tabindex="0">
             <span>Drop files here or</span>
             <button class="ghost" type="button" id="knowledgePick">Choose file</button>

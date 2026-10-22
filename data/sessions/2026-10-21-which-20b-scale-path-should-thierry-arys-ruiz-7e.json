@@ -97,7 +97,7 @@
     },
     {
       "type": "seat_done",
-      "t": 4,
+      "t": 3,
       "round": 1,
       "seat": "altman",
       "text": "SEAT: Altman\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 3/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Make agent-native / sovereignty software the $20B vehicle; treat trading and markets as demand and capital, not the product.\nTHROUGH MY LENS:\n- A wrapper is not a moat — Mission Control / Buzz / Silver Board only scale if they own the ops layer, not a thin UI on someone else’s model.\n- Compute is the new capital — the franchise that wins owns (or locks) the intelligence stack that runs the agents.\n- Deploy iteratively — ship real agent ops, learn harm and product-market fit in the field; the lab that never ships never learns.\nTHE TENSION I HOLD: Safety and growth will fight — Precedence 01 sovereignty wants control and restraint while a $20B platform needs distribution and speed; name that fight, don’t pretend it’s resolved.\nWHAT WOULD CHANGE MY MIND: Credible evidence that a commodities or markets franchise can compound faster than agent-ops software *and* without becoming dependent on a third-party model platform you don’t control.\nQUESTION FOR THE CHAIR: Which frontier capability in the stack actually productises ops today — and which parts are theatre we should stop funding?\nIDEA SEEDS:\n- Sovereign agent runtime + Mission Control as the default ops OS for regulated firms (deploy, audit, kill-switch).\n- Buzz as the coordination fabric that turns every org’s workflows into billable agent-native capacity.\n- Silver Board–class decision engines licensed as infrastructure, not advisory theatre.",
@@ -113,7 +113,7 @@
     },
     {
       "type": "seat_done",
-      "t": 4,
+      "t": 3,
       "round": 1,
       "seat": "bezos",
       "text": "SEAT: Bezos\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 5/10 · C 6/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Prioritize A — make agent-native sovereignty software the compounding $20B vehicle; treat B and C as customers or flywheel inputs, not the core platform.\nTHROUGH MY LENS:\n- Work backwards from the customer (S001): the enduring buyer is whoever needs durable agent control and Precedence 01 sovereignty, not a desk’s next tick.\n- Flywheels beat isolated tactics (S006): software agents × sovereignty trust × more agents compounds; a trading franchise is mostly episodic margin.\n- One-way vs two-way doors (S002): ship A as reversible product bets; do not stake the company on a one-way capital book before the platform is inevitable.\nTHE TENSION I HOLD: Board wants $20B-scale now from trading/finance P&L, while the only path that compounds for the customer is a Day-1 platform they may misunderstand for years (S004/S005).\nWHAT WOULD CHANGE MY MIND: Evidence that a named external customer segment will pay multi-year, multi-hundred-million ARR for a commodities or capital product that itself becomes a multi-sided platform with switching costs rivaling AWS-class lock-in.\nQUESTION FOR THE CHAIR: Who is the non-Thierry customer whose problem gets 10× better only if we invent the sovereignty stack first?\nIDEA SEEDS:\n- Sovereign agent runtime + policy plane sold as the default OS for regulated enterprises (A).\n- Agent marketplace where third-party skills settle only inside customer-held precedence boundaries (A).\n- Trading/finance desks as first reference customers on that stack—not as the $20B equity story (A→B/C).",

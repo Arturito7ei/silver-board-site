@@ -14,11 +14,11 @@
   },
   "defaultSeats": [
     "musk",
-    "altman",
+    "suntzu",
     "bezos",
-    "amodei",
     "jung",
-    "suntzu"
+    "thiel",
+    "druckenmiller"
   ],
   "advisors": [
     {

@@ -1128,6 +1128,51 @@ function renderKnowledgeList(knowledge) {
   });
 }
 
+let knowledgeSearchTimer = null;
+
+function clearKnowledgeSearchHits() {
+  const hits = $("knowledgeSearchHits");
+  if (!hits) return;
+  hits.hidden = true;
+  hits.innerHTML = "";
+}
+
+function renderKnowledgeSearchHits(data) {
+  const el = $("knowledgeSearchHits");
+  if (!el) return;
+  const rows = data?.hits || [];
+  if (!rows.length) {
+    el.hidden = false;
+    el.innerHTML = `<li class="muted">No matches in hot / sources / inbox</li>`;
+    return;
+  }
+  el.hidden = false;
+  el.innerHTML = rows
+    .map(
+      (h) =>
+        `<li><span class="k-path">${esc(h.kind)} · ${esc(h.path)}${h.line ? `:${h.line}` : ""}</span><div class="k-snip">${esc(h.snippet || "")}</div></li>`,
+    )
+    .join("");
+}
+
+async function runKnowledgeSearch(q) {
+  const query = String(q || "").trim();
+  if (query.length < 2) {
+    clearKnowledgeSearchHits();
+    return;
+  }
+  if (STATIC || !state.writable) {
+    renderKnowledgeSearchHits({ hits: [] });
+    showEditorMsg("Knowledge search needs the local room (127.0.0.1).");
+    return;
+  }
+  const key = state.editorKey || $("editorForm")?.key?.value || "";
+  const params = new URLSearchParams({ q: query, limit: "20" });
+  if (key) params.set("key", key);
+  const data = await api(`/api/knowledge/search?${params}`);
+  renderKnowledgeSearchHits(data);
+}
+
 function setKnowledgePaneMode(enabled, note) {
   const pane = $("knowledgePane");
   const cta = $("knowledgePagesCta");
@@ -1222,6 +1267,9 @@ async function saveSeatMode(key, mode) {
 
 async function loadKnowledge(key) {
   state.editorKey = key;
+  clearKnowledgeSearchHits();
+  const searchInput = $("knowledgeSearch");
+  if (searchInput) searchInput.value = "";
   if (STATIC) {
     setKnowledgePaneMode(false);
     renderKnowledgeList({ ledger: { items: [] } });
@@ -1333,6 +1381,21 @@ async function requestDistill() {
 
 function bindKnowledgePane() {
   const drop = $("knowledgeDrop");
+  const searchInput = $("knowledgeSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      clearTimeout(knowledgeSearchTimer);
+      knowledgeSearchTimer = setTimeout(() => {
+        runKnowledgeSearch(searchInput.value).catch((e) => showEditorMsg(String(e.message || e)));
+      }, 220);
+    });
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        searchInput.value = "";
+        clearKnowledgeSearchHits();
+      }
+    });
+  }
   $("knowledgePick").onclick = () => {
     const blocked = ingestBlockedReason(state.editorKey);
     if (blocked) {

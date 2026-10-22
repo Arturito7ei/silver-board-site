@@ -757,6 +757,44 @@ code {
   font-weight: 500;
 }
 .knowledge-note { font-size: 0.78rem; margin: 0 0 0.65rem; }
+.knowledge-search { margin: 0 0 0.65rem; }
+.knowledge-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--silver);
+  font: inherit;
+  font-size: 0.82rem;
+}
+.knowledge-search input:focus { outline: 1px solid var(--gold); border-color: var(--gold); }
+.knowledge-search-hits {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  max-height: 10rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.knowledge-search-hits li {
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+.knowledge-search-hits li:last-child { border-bottom: 0; }
+.knowledge-search-hits .k-path {
+  color: var(--gold);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.35rem;
+}
+.knowledge-search-hits .k-snip { color: var(--muted); }
 .settings-section {
   grid-column: 1 / -1;
   margin: 0.85rem 0 0.15rem;
