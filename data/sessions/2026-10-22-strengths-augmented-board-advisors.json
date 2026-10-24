@@ -63,6 +63,15 @@
         "jung",
         "suntzu"
       ],
+      "tableSeats": [
+        "musk",
+        "altman",
+        "bezos",
+        "amodei",
+        "jung",
+        "suntzu"
+      ],
+      "mutedSeats": [],
       "chair": "dalio",
       "mode": "convene",
       "thinking": {
@@ -250,7 +259,7 @@
     },
     {
       "type": "draft",
-      "t": 3,
+      "t": 4,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -272,19 +281,19 @@
     },
     {
       "type": "phase",
-      "t": 3,
+      "t": 4,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 3,
+      "t": 4,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "signal",
-      "t": 3,
+      "t": 4,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -358,7 +367,7 @@
     },
     {
       "type": "phase",
-      "t": 3,
+      "t": 4,
       "phase": "signal",
       "label": "The Board speaks"
     }

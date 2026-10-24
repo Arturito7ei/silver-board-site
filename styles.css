@@ -172,6 +172,50 @@ body {
 }
 .sidebar-sessions button:hover { background: rgba(255,255,255,0.06); color: var(--ink); }
 .sidebar-sessions button.active { background: rgba(196,163,90,0.15); color: var(--ink); }
+.sidebar-sessions li {
+  display: flex; align-items: center; gap: 0.15rem;
+}
+.sidebar-sessions li > button.sidebar-sit {
+  flex: 1; min-width: 0;
+}
+.sidebar-sit-menu {
+  flex: 0 0 auto; width: 1.5rem; height: 1.5rem; padding: 0;
+  border: 0; border-radius: 6px; background: transparent; color: var(--muted);
+  font-size: 0.85rem; line-height: 1; cursor: pointer;
+}
+.sidebar-sit-menu:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+.sidebar-ctx {
+  position: fixed; z-index: 80; min-width: 10rem;
+  background: #1a1e28; border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45); padding: 0.35rem;
+  display: grid; gap: 0.15rem;
+}
+.sidebar-ctx button, .sidebar-ctx select {
+  width: 100%; text-align: left; background: transparent; border: 0;
+  color: var(--silver); font-size: 0.78rem; padding: 0.4rem 0.55rem; border-radius: 6px;
+  font-family: inherit;
+}
+.sidebar-ctx button:hover { background: rgba(255,255,255,0.06); color: var(--ink); }
+.sidebar-ctx select {
+  border: 1px solid var(--line); background: rgba(0,0,0,0.35); margin-top: 0.15rem;
+}
+.sidebar-folder-actions {
+  display: flex; gap: 0.25rem; padding: 0.25rem 0.45rem 0.5rem;
+}
+.sidebar-folder-actions button {
+  flex: 1; font-size: 0.68rem; padding: 0.3rem 0.4rem; border-radius: 6px;
+  border: 1px solid var(--line); background: transparent; color: var(--silver);
+  cursor: pointer; font-family: inherit;
+}
+.sidebar-folder-actions button:hover { border-color: var(--gold); color: var(--ink); }
+.seat.muted-seat, .nameplate.muted-seat { opacity: 0.42; filter: grayscale(0.35); }
+.nameplate .mute-btn {
+  display: block; margin-top: 0.15rem; font-size: 0.58rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--gold); background: transparent; border: 0;
+  padding: 0; cursor: pointer; font-family: inherit;
+}
+.nameplate .mute-btn:hover { text-decoration: underline; }
+.nameplate.muted-seat .mute-btn { color: var(--muted); }
 .sidebar-foot {
   border-top: 1px solid var(--line);
   padding: 0.45rem 0.5rem 0.65rem;
@@ -348,7 +392,14 @@ code {
 .opt {
   border: 1px solid var(--line); padding: 0.35rem 0.55rem; border-radius: 8px;
   font-size: 0.8rem; color: var(--muted); background: rgba(0,0,0,0.2);
+  text-align: left; cursor: pointer; font-family: inherit; width: 100%;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
+button.opt:hover { border-color: var(--gold); color: var(--ink); }
+button.opt.selected, button.opt[aria-pressed="true"] {
+  border-color: var(--gold); color: var(--ink); background: rgba(196,163,90,0.18);
+}
+.opt-id { color: var(--gold); font-weight: 600; margin-right: 0.35rem; }
 
 .layout {
   display: grid; grid-template-columns: minmax(0, 1fr) 20rem;

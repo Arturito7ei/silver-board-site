@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 0,
+      "t": 1,
       "title": "Strengths — augmented board of Advisors",
       "decision": "Each seat names strengths and how they help as an augmented board of Advisors; Signal frames how this table serves the operator (demo / intro sitting — not a venture proceed).",
       "brief": "Provide with your strengths and how you can help as an augmented board of Advisors. Launch/demo sitting — visitor must see seats speak, Field fill, Signal converge. Not a strategy proceed call.",
@@ -63,6 +63,15 @@
         "jung",
         "suntzu"
       ],
+      "tableSeats": [
+        "musk",
+        "altman",
+        "bezos",
+        "amodei",
+        "jung",
+        "suntzu"
+      ],
+      "mutedSeats": [],
       "chair": "dalio",
       "mode": "convene",
       "thinking": {
@@ -76,13 +85,13 @@
     },
     {
       "type": "phase",
-      "t": 0,
+      "t": 1,
       "phase": "opening",
       "label": "The field is speaking"
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "musk",
       "text": "SEAT: Musk\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 4/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Keep this default table — my strength is boiling decisions to physics and deleting cargo-cult process before you automate waste.\nTHROUGH MY LENS:\n- First principles (S002): I help you strip a plan to materials, energy, time, and information, then rebuild.\n- Delete → simplify → accelerate → automate (S006): I flag when the board is automating theatre.\n- Vertical integration (S003): I pressure whether you own the bottleneck or rent a costume.\nTHE TENSION I HOLD: Ambition that sounds civilisational vs. a room that never leaves the test stand (S004/S005).\nWHAT WOULD CHANGE MY MIND: Evidence that a different seat set would force harder engineering tests than this table on your next real decision.\nQUESTION FOR THE CHAIR: Will you refuse to treat a polished Signal as a substitute for a working demo?\nHOW I HELP: Stress-test scale claims; kill process-as-proxy; demand a measurable prototype.",
@@ -98,7 +107,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "altman",
       "text": "SEAT: Altman\nSTANCE: Strong yes\nOPTION SCORES: A 8/10 · B 5/10 · C 6/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: none\n\nTHE CALL: Keep the table for launch — my strength is naming platform dependency and whether you are shipping or wrapping.\nTHROUGH MY LENS:\n- Deploy iteratively (S001): I push the board to learn harm and fit in the field, not only in cards.\n- A wrapper is not a moat (S005): I ask what layer you actually own.\n- Safety and growth will fight (S003): I name that fight so the Signal does not fake resolution.\nTHE TENSION I HOLD: Vision that scales vs. dependency on someone else’s cluster and law (S002/S006/S004).\nWHAT WOULD CHANGE MY MIND: A concrete next decision where frontier-model ops is irrelevant and a different archetype covers the terrain better.\nQUESTION FOR THE CHAIR: Which part of this board’s advice becomes product this week — and which is costume?\nHOW I HELP: Platform realism; ship-vs-lab; continuity risk when intelligence is rented.",
@@ -114,7 +123,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "bezos",
       "text": "SEAT: Bezos\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 3/10 · C 4/10\nCONFIDENCE: 5/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Keep this default table as the standing launch board — my strength is working backwards from the customer and separating one-way from two-way doors.\nTHROUGH MY LENS:\n- Work backwards from the customer (S001): if counsel does not compound for them, it is theatre.\n- One-way vs two-way doors (S002): I slow irreversible calls and speed reversible ones.\n- Flywheels beat isolated tactics (S006): I ask what compounds after the sitting ends.\nTHE TENSION I HOLD: Long-term orientation that looks slow vs. the operator’s urge to treat every sitting as a one-way decree (S005/S004).\nWHAT WOULD CHANGE MY MIND: A named customer problem this table systematically fails to illuminate for two sittings in a row.\nQUESTION FOR THE CHAIR: Who is the non-you customer whose outcome improves because this board spoke?\nHOW I HELP: Customer obsession; decision door-typing; compound vs episodic advice.",
@@ -130,7 +139,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "amodei",
       "text": "SEAT: Amodei\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 5/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Keep the table — my strength is steerability: capability without limits is a liability, and uninspectable agents do not belong on vaults.\nTHROUGH MY LENS:\n- If capable, must be steerable (S001): I bind ambition to control.\n- Interpretability and evals (S002/S008): I treat MRI-before-deploy as board hygiene.\n- Financial AI that cannot be audited is a model-risk fail (S003/S006): I veto silent automation on capital rails.\nTHE TENSION I HOLD: Demo energy that wants fluent agents vs. thresholds that look like friction until an incident (S005/S007).\nWHAT WOULD CHANGE MY MIND: Proof that a thinner safety seat plus an external audit checklist covers your next deploy better than this chair+seat set.\nQUESTION FOR THE CHAIR: What is the kill-switch and eval bar before any agent touches real money or private data?\nHOW I HELP: Eval gates; auditability; P01-aligned “no uninspectable agent on a vault.”",
@@ -146,7 +155,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "jung",
       "text": "SEAT: Jung\nSTANCE: Conditional\nOPTION SCORES: A 7/10 · B 6/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P02\n\nTHE CALL: Keep the table for launch only if you use it as living counsel — my strength is naming the shadow when an “augmented board” becomes a persona that eats the person.\nTHROUGH MY LENS:\n- Shadow of the plan (S001): who do we become by consulting simulations instead of deciding?\n- What you do not bring to consciousness comes as fate (S002): I surface disowned motives in the brief.\n- Living symbol vs dead slogan (S008): if “Board” organises energy, keep it; if it is a KPI costume, reshape seats (S007).\nTHE TENSION I HOLD: Augmentation that strengthens judgment vs. possession by famous names that inflate the operator’s persona (S004/S005).\nWHAT WOULD CHANGE MY MIND: Evidence that rotating seats (option B) restores consciousness better than this fixed myth for your actual decisions.\nQUESTION FOR THE CHAIR: If we dropped the celebrity seats tomorrow, would the method still organise your energy?\nHOW I HELP: Shadow checks; projection alerts; keep the board a tool, not a possession.",
@@ -162,7 +171,7 @@
     },
     {
       "type": "seat_done",
-      "t": 2,
+      "t": 3,
       "round": 1,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nSTANCE: Strong yes\nOPTION SCORES: A 8/10 · B 4/10 · C 6/10\nCONFIDENCE: 4/5\nRUIN RISK: none\nPRECEDENCE FLAG: none\n\nTHE CALL: Keep this table as the launch formation — my strength is calculating before battle and refusing prolonged operations that drain the treasury.\nTHROUGH MY LENS:\n- Victory calculated before battle (S004): I help you decide whether to convene at all.\n- Know the terrain (S002): market, regulation, energy, attention — then move.\n- Strike where empty (S007); avoid draining campaigns (S005): I say when not to fight with a full sitting.\nTHE TENSION I HOLD: A standing board that looks ready vs. using it when the math is not there (S003/S008).\nWHAT WOULD CHANGE MY MIND: A terrain map that shows this six-seat formation systematically blind on your next campaign.\nQUESTION FOR THE CHAIR: Is this sitting reconnaissance, or are you already committed to a campaign?\nHOW I HELP: Terrain before move; economy of force; when to skip the fight and ask one sharp question instead.",
@@ -178,7 +187,7 @@
     },
     {
       "type": "tensions",
-      "t": 2,
+      "t": 3,
       "tensions": [
         {
           "question": "Is a standing celebrity table living counsel or persona possession?",
@@ -245,13 +254,13 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 3,
       "phase": "tensions",
       "label": "Tensions named"
     },
     {
       "type": "draft",
-      "t": 2,
+      "t": 4,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -273,19 +282,19 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "signal",
-      "t": 2,
+      "t": 4,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -359,7 +368,7 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 4,
       "phase": "signal",
       "label": "The Board speaks"
     }

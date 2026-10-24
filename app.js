@@ -5,10 +5,11 @@ const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signa
 const TABLE_STORE = "silver-board-table";
 const SIDEBAR_STORE = "silver-board-sidebar";
 const FIELD_STORE = "silver-board-field";
-/** Launch demo ask — composer suggestion + canned first paint */
+/** Launch demo brief — Demo sitting only (composer placeholder is Speak to the board) */
 const DEMO_QUERY =
   "Provide with your strengths and how you can help as an augmented board of Advisors";
 const DEMO_ID = "2026-10-22-example-strengths-augmented-board";
+const COMPOSER_PLACEHOLDER = "Speak to the board";
 
 const state = {
   seats: [],
@@ -32,6 +33,15 @@ const state = {
   attachments: [],
   dictating: false,
   recognition: null,
+  /** Room-scope mute defaults (board/settings.json). */
+  mutedSeats: [],
+  /** Sitting-scope mute for the open sitting (council.mutedSeats). */
+  sittingMuted: [],
+  /** Full table including muted for the open sitting. */
+  tableSeats: [],
+  selectedOption: null,
+  folders: [{ id: "inbox", label: "Inbox" }],
+  allSessions: [],
 };
 
 function esc(s) {
@@ -112,8 +122,19 @@ function bindArt(root) {
   }
 }
 
+function isMuted(key) {
+  if (key === state.chairKey) return false;
+  // Sitting-scope wins while a sitting is open (empty list = all Active for this sitting).
+  // Room-scope (settings.mutedSeats) applies only with no open sitting — seeds new stamps.
+  if (state.current) return (state.sittingMuted || []).includes(key);
+  return (state.mutedSeats || []).includes(key);
+}
+
 function renderSeats(keys) {
-  state.seats = tableOrder(keys);
+  const table = keys?.length ? keys : state.defaultSeats;
+  state.tableSeats = [...table];
+  // Show full table (Active + Muted); mute is chrome + runtime, not remove-from-stage
+  state.seats = tableOrder(table);
   const box = $("seats");
   const plates = $("plates");
   box.innerHTML = "";
@@ -121,25 +142,85 @@ function renderSeats(keys) {
   state.seats.forEach((key) => {
     const s = state.byKey[key] || { key, short: key, initials: "?", color: "#c5cdd8", name: key };
     const chair = key === state.chairKey;
+    const muted = isMuted(key);
     const el = document.createElement("div");
-    el.className = `seat${chair ? " chair-seat" : ""}`;
+    el.className = `seat${chair ? " chair-seat" : ""}${muted ? " muted-seat" : ""}`;
     el.id = `seat-${key}`;
     el.dataset.key = key;
     el.tabIndex = 0;
     el.setAttribute("role", "button");
-    el.setAttribute("aria-label", `${displayName(s, key)}, ${s.pillar || ""}. Open card.`);
+    el.setAttribute(
+      "aria-label",
+      `${displayName(s, key)}, ${muted ? "Muted" : "Active"}${s.pillar ? `, ${s.pillar}` : ""}. Open card.`,
+    );
     el.innerHTML = bustHtml(s);
     box.appendChild(el);
     const pl = document.createElement("div");
-    pl.className = `nameplate${chair ? " chair" : ""}`;
+    pl.className = `nameplate${chair ? " chair" : ""}${muted ? " muted-seat" : ""}`;
     pl.id = `plate-${key}`;
     pl.dataset.key = key;
-    const plateSub = chair ? ["Chair", s.pillar || s.archetype].filter(Boolean).join(" · ") : s.pillar || s.archetype || "";
-    pl.innerHTML = `<b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>`;
+    const plateSub = chair
+      ? ["Chair", s.pillar || s.archetype].filter(Boolean).join(" · ")
+      : [muted ? "Muted" : "Active", s.pillar || s.archetype].filter(Boolean).join(" · ");
+    const muteCtrl = chair
+      ? ""
+      : `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}">${muted ? "Unmute" : "Mute"}</button>`;
+    pl.innerHTML = `<b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>${muteCtrl}`;
     plates.appendChild(pl);
   });
   bindArt(box);
+  plates.querySelectorAll("[data-mute]").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      toggleMute(btn.dataset.mute);
+    };
+  });
   layoutStage();
+}
+
+async function toggleMute(key) {
+  if (!key || key === state.chairKey) return;
+  if (STATIC || !state.writable) {
+    setComposerHint("Mute needs the local room (npm start).");
+    return;
+  }
+  try {
+    if (state.current) {
+      // Sitting-scope: council.mutedSeats + handoff; watch skips muted round cards
+      const sitting = new Set(state.sittingMuted || []);
+      if (sitting.has(key)) sitting.delete(key);
+      else sitting.add(key);
+      const res = await api(`/api/sessions/${encodeURIComponent(state.current)}/mute`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mutedSeats: [...sitting] }),
+      });
+      state.sittingMuted = res.mutedSeats || [...sitting];
+      renderSeats(res.tableSeats || state.tableSeats);
+      setComposerHint(
+        `${displayName(state.byKey[key], key)} is ${isMuted(key) ? "Muted" : "Active"} for this sitting.`,
+        true,
+      );
+      return;
+    }
+    // Room-scope: board/settings.json — seeds the next new sitting
+    const room = new Set(state.mutedSeats || []);
+    if (room.has(key)) room.delete(key);
+    else room.add(key);
+    state.mutedSeats = [...room];
+    await api("/api/settings", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ mutedSeats: state.mutedSeats }),
+    });
+    renderSeats(state.defaultSeats);
+    setComposerHint(
+      `${displayName(state.byKey[key], key)} is ${isMuted(key) ? "Muted" : "Active"} (room default for new sittings).`,
+      true,
+    );
+  } catch (e) {
+    setComposerHint(String(e.message || e));
+  }
 }
 
 function layoutStage() {
@@ -357,7 +438,11 @@ function pushFeed(seat, f) {
 function setComposerMode(live) {
   $("topic").classList.toggle("live", live);
   $("topicTitle").hidden = !live;
-  $("options").hidden = !live;
+  if (!live) {
+    $("options").hidden = true;
+  } else if (!$("options").innerHTML.trim()) {
+    $("options").hidden = true;
+  }
 }
 
 function showSignal(sig) {
@@ -394,14 +479,58 @@ function showSignal(sig) {
   setStep("signal");
 }
 
+function renderOptions(options) {
+  const box = $("options");
+  const list = Array.isArray(options) ? options.filter((o) => o && o.id) : [];
+  if (!list.length) {
+    box.hidden = true;
+    box.innerHTML = "";
+    state.selectedOption = null;
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = list
+    .map(
+      (o) =>
+        `<button type="button" class="opt" data-opt="${esc(o.id)}" aria-pressed="false"><span class="opt-id">${esc(o.id)}:</span>${esc(o.label)}</button>`,
+    )
+    .join("");
+  box.querySelectorAll("[data-opt]").forEach((btn) => {
+    btn.onclick = () => selectOption(btn.dataset.opt, list.find((o) => o.id === btn.dataset.opt)?.label || "");
+  });
+}
+
+function selectOption(id, label) {
+  state.selectedOption = id;
+  $("options")?.querySelectorAll("[data-opt]").forEach((btn) => {
+    const on = btn.dataset.opt === id;
+    btn.classList.toggle("selected", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  if ($("sigOption")) {
+    $("sigOption").textContent = id ? `Option ${id}` : "";
+    $("sigOption").hidden = !id;
+  }
+  const line = `Option ${id}: ${label}`.trim();
+  $("queryInput").value = line;
+  $("queryInput").focus();
+  setComposerHint(`Selected ${id}. Send to open a follow-up sitting, or edit first.`, true);
+}
+
 function applySetup(d) {
   setComposerMode(true);
   const title = d.title || d.decision || "Sitting";
   const demoTag = d.demoLabel || (d.demo ? "Demo sitting" : "");
   $("topicTitle").textContent = demoTag ? `${demoTag} · ${title}` : title;
-  $("options").innerHTML = (d.options || []).map((o) => `<span class="opt">${esc(o.id)}: ${esc(o.label)}</span>`).join("");
+  renderOptions(d.options || []);
   if (d.chair) state.chairKey = d.chair;
-  renderSeats(d.seats || state.defaultSeats);
+  state.sittingMuted = Array.isArray(d.mutedSeats) ? d.mutedSeats.slice() : [];
+  const table = d.tableSeats?.length ? d.tableSeats : d.seats || state.defaultSeats;
+  renderSeats(table);
+  // Demo brief stays on Demo sitting only — composer placeholder stays Speak to the board
+  if (d.demo || d.id === DEMO_ID || String(title).toLowerCase().includes("strengths")) {
+    /* brief already in council / topic; do not overwrite placeholder with DEMO_QUERY */
+  }
   setStep("opening");
 }
 
@@ -512,6 +641,9 @@ function resetStage({ preserveSittingStatus = false } = {}) {
   card.hidden = true;
   card.classList.remove("minimized", "expanded");
   setComposerMode(false);
+  renderOptions([]);
+  state.sittingMuted = [];
+  state.selectedOption = null;
   $("tensionBox").innerHTML = '<span class="muted">Waiting for the field.</span>';
   $("feed").innerHTML =
     '<div class="empty" id="feedEmpty">One line per seat as the field speaks. Click a seat to open its card. Compose the table to swap who sits.</div>';
@@ -553,7 +685,8 @@ async function submitQuery(ev) {
   ev.preventDefault();
   const query = $("queryInput").value.trim();
   if (!query) {
-    setComposerHint("Type a question for the board.");
+    setComposerHint("");
+    $("queryInput").focus();
     return;
   }
   if (STATIC || !state.writable) {
@@ -1574,26 +1707,97 @@ function bindSessionClicks(root) {
   });
 }
 
+function closeSidebarCtx() {
+  document.querySelectorAll(".sidebar-ctx").forEach((el) => el.remove());
+}
+
+function openSittingMenu(anchor, session) {
+  closeSidebarCtx();
+  const menu = document.createElement("div");
+  menu.className = "sidebar-ctx";
+  menu.setAttribute("role", "menu");
+  const folders = state.folders || [];
+  menu.innerHTML = `
+    <button type="button" data-act="rename">Rename</button>
+    <button type="button" data-act="delete">Delete</button>
+    <label class="muted" style="font-size:0.65rem;padding:0.25rem 0.55rem 0;display:block">Move to folder</label>
+    <select data-act="folder" aria-label="Move to folder">
+      ${folders.map((f) => `<option value="${esc(f.id)}" ${session.folderId === f.id ? "selected" : ""}>${esc(f.label)}</option>`).join("")}
+    </select>
+  `;
+  document.body.appendChild(menu);
+  const r = anchor.getBoundingClientRect();
+  menu.style.left = `${Math.min(r.left, window.innerWidth - 180)}px`;
+  menu.style.top = `${Math.min(r.bottom + 4, window.innerHeight - 160)}px`;
+  menu.querySelector('[data-act="rename"]').onclick = async () => {
+    closeSidebarCtx();
+    const next = prompt("Rename sitting", sessionListLabel(session));
+    if (next == null || !String(next).trim()) return;
+    try {
+      await api(`/api/sessions/${encodeURIComponent(session.id)}/rename`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: String(next).trim() }),
+      });
+      await refreshSessions();
+    } catch (e) {
+      setComposerHint(String(e.message || e));
+    }
+  };
+  menu.querySelector('[data-act="delete"]').onclick = async () => {
+    closeSidebarCtx();
+    if (!confirm(`Delete “${sessionListLabel(session)}”?`)) return;
+    try {
+      await api(`/api/sessions/${encodeURIComponent(session.id)}`, { method: "DELETE" });
+      if (state.current === session.id) {
+        state.current = null;
+        resetStage();
+      }
+      await refreshSessions();
+    } catch (e) {
+      setComposerHint(String(e.message || e));
+    }
+  };
+  menu.querySelector('[data-act="folder"]').onchange = async (ev) => {
+    const folderId = ev.target.value;
+    closeSidebarCtx();
+    try {
+      await api(`/api/sessions/${encodeURIComponent(session.id)}/classify`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ folderId }),
+      });
+      await refreshSessions();
+    } catch (e) {
+      setComposerHint(String(e.message || e));
+    }
+  };
+  const dismiss = (ev) => {
+    if (menu.contains(ev.target) || anchor === ev.target) return;
+    closeSidebarCtx();
+    document.removeEventListener("click", dismiss, true);
+  };
+  setTimeout(() => document.addEventListener("click", dismiss, true), 0);
+}
+
 function renderSidebarSessions(sessions, filter = "") {
   const nav = $("sidebarNav");
   const q = filter.trim().toLowerCase();
   const items = (sessions || []).filter((s) => {
     if (!q) return true;
-    return `${s.title || ""} ${s.id || ""} ${s.status || ""}`.toLowerCase().includes(q);
+    return `${s.title || ""} ${s.id || ""} ${s.status || ""} ${s.folderId || ""}`.toLowerCase().includes(q);
   });
   const order = ["Today", "Yesterday", "Previous 7 days", "Older"];
-  const folders = [
-    {
-      id: "default",
-      label: "Default table",
-      sessions: items.filter((s) => s.status === "live" || s.status === "running" || s.status === "awaiting_chair"),
-    },
-    {
-      id: "past",
-      label: "Past sittings",
-      sessions: items.filter((s) => s.status !== "live" && s.status !== "running" && s.status !== "awaiting_chair"),
-    },
-  ];
+  const folderDefs = (state.folders || [{ id: "inbox", label: "Inbox" }]).slice();
+  // Ensure every used folderId has a bucket
+  for (const s of items) {
+    const fid = s.folderId || "inbox";
+    if (!folderDefs.some((f) => f.id === fid)) folderDefs.push({ id: fid, label: fid });
+  }
+  const folders = folderDefs.map((f) => ({
+    ...f,
+    sessions: items.filter((s) => (s.folderId || "inbox") === f.id),
+  }));
   let html = "";
   for (const folder of folders) {
     html += `<div class="sidebar-folder" data-folder="${esc(folder.id)}">
@@ -1615,7 +1819,10 @@ function renderSidebarSessions(sessions, filter = "") {
         html += list
           .map(
             (s) =>
-              `<li><button type="button" data-id="${esc(s.id)}" class="${s.id === state.current ? "active" : ""}">${esc(sessionListLabel(s))}</button></li>`
+              `<li>
+                <button type="button" class="sidebar-sit ${s.id === state.current ? "active" : ""}" data-id="${esc(s.id)}">${esc(sessionListLabel(s))}</button>
+                <button type="button" class="sidebar-sit-menu" data-menu="${esc(s.id)}" aria-label="Sitting options">⋯</button>
+              </li>`,
           )
           .join("");
         html += `</ul></div>`;
@@ -1623,20 +1830,52 @@ function renderSidebarSessions(sessions, filter = "") {
     }
     html += `</div></div>`;
   }
+  html += `<div class="sidebar-folder-actions"><button type="button" id="sidebarNewFolder">New folder</button></div>`;
   if (!items.length) {
-    nav.innerHTML = `<div class="sidebar-empty muted">${q ? "No matches" : "No sittings yet"}</div>`;
-    return;
+    nav.innerHTML = `<div class="sidebar-empty muted">${q ? "No matches" : "No sittings yet"}</div>
+      <div class="sidebar-folder-actions"><button type="button" id="sidebarNewFolder">New folder</button></div>`;
+  } else {
+    nav.innerHTML = html;
   }
-  nav.innerHTML = html;
   nav.querySelectorAll(".sidebar-folder-toggle").forEach((btn) => {
     btn.onclick = () => btn.closest(".sidebar-folder").classList.toggle("collapsed");
   });
+  nav.querySelectorAll(".sidebar-sit-menu").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const s = (state.allSessions || []).find((x) => x.id === btn.dataset.menu);
+      if (s) openSittingMenu(btn, s);
+    };
+  });
+  const nf = nav.querySelector("#sidebarNewFolder");
+  if (nf) {
+    nf.onclick = async () => {
+      if (STATIC || !state.writable) {
+        setComposerHint("Folders need the local room (npm start).");
+        return;
+      }
+      const label = prompt("Folder name");
+      if (!label?.trim()) return;
+      try {
+        const meta = await api("/api/sittings-meta/folders", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ label: label.trim() }),
+        });
+        state.folders = meta.folders || state.folders;
+        await refreshSessions();
+      } catch (e) {
+        setComposerHint(String(e.message || e));
+      }
+    };
+  }
   bindSessionClicks(nav);
 }
 
 async function refreshSessions() {
   const data = await api("/api/sessions");
   state.allSessions = data.sessions || [];
+  if (Array.isArray(data.folders) && data.folders.length) state.folders = data.folders;
   renderSidebarSessions(state.allSessions, $("sessionSearch")?.value || "");
   return data;
 }
@@ -1679,10 +1918,12 @@ function bindSidebar() {
   $("newSitting").onclick = () => {
     if (state.es) state.es.close();
     state.current = null;
+    state.sittingMuted = [];
     resetStage();
-    $("queryInput").placeholder = DEMO_QUERY;
+    renderSeats(state.defaultSeats);
+    $("queryInput").placeholder = COMPOSER_PLACEHOLDER;
     $("queryInput").focus();
-    setComposerHint(STATIC || !state.writable ? "Local room needed to run a sitting. Chrome preview only." : "Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
+    setComposerHint("");
   };
   $("sessionSearch").oninput = () => renderSidebarSessions(state.allSessions || [], $("sessionSearch").value);
 }
@@ -1695,6 +1936,7 @@ async function boot() {
   state.defaultSeats = seats.defaultSeats || [];
   state.writable = !!seats.writable && !STATIC;
   state.deps = seats.deps || null;
+  state.mutedSeats = Array.isArray(seats.mutedSeats) ? seats.mutedSeats.slice() : [];
   if (seats.disclaimer) {
     $("disclaimer").textContent = seats.disclaimer;
   }
@@ -1712,12 +1954,13 @@ async function boot() {
   renderSeats(state.defaultSeats);
   fillSittingChair();
   setComposerMode(false);
+  // No under-field “Type a question…” — keep hint empty unless deps/error
   if (STATIC || !state.writable) {
-    setComposerHint("Local room needed to run a sitting. Chrome preview only.");
+    setComposerHint("");
   } else if (state.deps?.extractOk === false && state.deps.hint) {
     setComposerHint(state.deps.hint);
   } else {
-    setComposerHint("Writes sessions/ on this machine. Chair with /silver-board in Claude Code.");
+    setComposerHint("");
   }
   window.addEventListener("resize", layoutStage);
   bindSignalCard();
@@ -1774,7 +2017,7 @@ async function boot() {
     };
   });
 
-  $("queryInput").placeholder = DEMO_QUERY;
+  $("queryInput").placeholder = COMPOSER_PLACEHOLDER;
 
   const sess = await refreshSessions();
   const live = sess.live || sess.running;

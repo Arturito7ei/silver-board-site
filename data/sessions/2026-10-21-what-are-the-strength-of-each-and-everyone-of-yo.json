@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 1,
+      "t": 2,
       "title": "What are the Strength of each and everyone of you?",
       "decision": "What are the Strength of each and everyone of you?",
       "brief": "What are the Strength of each and everyone of you?",
@@ -36,6 +36,15 @@
         "watts",
         "rule"
       ],
+      "tableSeats": [
+        "buffett",
+        "suntzu",
+        "bezos",
+        "taleb",
+        "watts",
+        "rule"
+      ],
+      "mutedSeats": [],
       "chair": "dalio",
       "mode": "convene",
       "thinking": {
@@ -49,13 +58,13 @@
     },
     {
       "type": "phase",
-      "t": 1,
+      "t": 2,
       "phase": "opening",
       "label": "Awaiting chair"
     },
     {
       "type": "status",
-      "t": 1,
+      "t": 2,
       "state": "awaiting_chair",
       "runner": "cursor",
       "playbackRunner": "viewer",
