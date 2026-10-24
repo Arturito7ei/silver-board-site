@@ -91,7 +91,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "musk",
       "text": "SEAT: Musk\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 4/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Make agent-native sovereignty software the $20B vehicle; treat trading and markets as demand surfaces, not the company.\nTHROUGH MY LENS:\n- First principles (S002): boil the bet to compute, data custody, and iteration speed—not finance folklore.\n- Vertical integration (S003): own the agent runtime stack end-to-end when cloud default is the bottleneck.\n- Delete → simplify → accelerate → automate (S006): ship Mission Control/Buzz/Silver Board as one product line, not three costumes.\nTHE TENSION I HOLD: Civilisational-scale software ambition vs. the lure of commodity/finance desks that look like faster cash but cargo-cult industry lore (S001/S005).\nWHAT WOULD CHANGE MY MIND: Proof that a commodities or capital franchise can hit $20B EV with higher physics-like unit economics than sovereign agent software in ≤36 months.\nQUESTION FOR THE CHAIR: Will you refuse to default any customer workload to third-party cloud even when that slows early revenue?\nIDEA SEEDS:\n- Sovereign Agent OS: on-prem/edge Mission Control + Buzz as the default runtime for regulated enterprises (P01-native).\n- Silver Board as paid decision infrastructure: multi-agent board-as-a-service with auditable local memory, not SaaS chat.\n- High-end enterprise wedge first (S007): sell full-stack agent ops to Swiss/EU critical industries, then drive volume/price down.",
@@ -107,7 +107,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "altman",
       "text": "SEAT: Altman\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 3/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Make agent-native / sovereignty software the $20B vehicle; treat trading and markets as demand and capital, not the product.\nTHROUGH MY LENS:\n- A wrapper is not a moat — Mission Control / Buzz / Silver Board only scale if they own the ops layer, not a thin UI on someone else’s model.\n- Compute is the new capital — the franchise that wins owns (or locks) the intelligence stack that runs the agents.\n- Deploy iteratively — ship real agent ops, learn harm and product-market fit in the field; the lab that never ships never learns.\nTHE TENSION I HOLD: Safety and growth will fight — Precedence 01 sovereignty wants control and restraint while a $20B platform needs distribution and speed; name that fight, don’t pretend it’s resolved.\nWHAT WOULD CHANGE MY MIND: Credible evidence that a commodities or markets franchise can compound faster than agent-ops software *and* without becoming dependent on a third-party model platform you don’t control.\nQUESTION FOR THE CHAIR: Which frontier capability in the stack actually productises ops today — and which parts are theatre we should stop funding?\nIDEA SEEDS:\n- Sovereign agent runtime + Mission Control as the default ops OS for regulated firms (deploy, audit, kill-switch).\n- Buzz as the coordination fabric that turns every org’s workflows into billable agent-native capacity.\n- Silver Board–class decision engines licensed as infrastructure, not advisory theatre.",
@@ -123,7 +123,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "bezos",
       "text": "SEAT: Bezos\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 5/10 · C 6/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Prioritize A — make agent-native sovereignty software the compounding $20B vehicle; treat B and C as customers or flywheel inputs, not the core platform.\nTHROUGH MY LENS:\n- Work backwards from the customer (S001): the enduring buyer is whoever needs durable agent control and Precedence 01 sovereignty, not a desk’s next tick.\n- Flywheels beat isolated tactics (S006): software agents × sovereignty trust × more agents compounds; a trading franchise is mostly episodic margin.\n- One-way vs two-way doors (S002): ship A as reversible product bets; do not stake the company on a one-way capital book before the platform is inevitable.\nTHE TENSION I HOLD: Board wants $20B-scale now from trading/finance P&L, while the only path that compounds for the customer is a Day-1 platform they may misunderstand for years (S004/S005).\nWHAT WOULD CHANGE MY MIND: Evidence that a named external customer segment will pay multi-year, multi-hundred-million ARR for a commodities or capital product that itself becomes a multi-sided platform with switching costs rivaling AWS-class lock-in.\nQUESTION FOR THE CHAIR: Who is the non-Thierry customer whose problem gets 10× better only if we invent the sovereignty stack first?\nIDEA SEEDS:\n- Sovereign agent runtime + policy plane sold as the default OS for regulated enterprises (A).\n- Agent marketplace where third-party skills settle only inside customer-held precedence boundaries (A).\n- Trading/finance desks as first reference customers on that stack—not as the $20B equity story (A→B/C).",
@@ -139,7 +139,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "amodei",
       "text": "SEAT: Amodei\nSTANCE: Strong yes\nOPTION SCORES: A 9/10 · B 3/10 · C 4/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Prioritize A—agent-native sovereignty software as the $20B vehicle; do not put uninspectable agents on trading or capital rails first.\nTHROUGH MY LENS:\n- Responsible scaling (S005): set capability thresholds and eval gates before desk or vault deploy.\n- Financial AI auditability (S003): model-risk fails if the agent cannot be inspected inside a control.\n- No uninspectable agent on a vault (S006): commodities/finance as first vehicle skips the MRI (S008).\nTHE TENSION I HOLD: Speed-to-$20B via trading/finance vs. steerable, auditable agents under P01—capability without limits is a liability (S001).\nWHAT WOULD CHANGE MY MIND: Independent evidence that a 7Ei agent stack already meets production audit/eval bars for financial control (traceable decisions, kill-switch, eval suite) before any desk capital.\nQUESTION FOR THE CHAIR: Is the agent auditable enough to sit inside a financial control—today, not after the first loss?\nIDEA SEEDS:\n- Sovereignty control plane: agent runtime with mandatory interpretability, eval gates, and data-residency as the default product.\n- Auditable agent OS for regulated firms: signed action logs, human-in-loop thresholds, ASL-style deploy ladders sold as infrastructure.\n- Safe-deploy kit for later B/C: desk/capital agents only after the sovereignty stack clears model-risk certification.",
@@ -155,7 +155,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "jung",
       "text": "SEAT: Jung\nSTANCE: Conditional\nOPTION SCORES: A 8/10 · B 3/10 · C 4/10\nCONFIDENCE: 3/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Prioritize A as the vessel of becoming; treat B and C as undeveloped material, not simultaneous conquest under a $20B mask.\nTHROUGH MY LENS:\n- Individuation (S003): become whole through the craft you can actually carry — agent-native sovereignty — not a three-domain brand.\n- Persona (S007): “$20B founder across tech/commodities/finance” is the office mask; if it eats Thierry, the sitting is already possession.\n- Enantiodromia (S006): one-sided tech-sovereignty virtue will flip; fleeing into B/C before integrating A invites fate, not growth (S002).\nTHE TENSION I HOLD: Ambition that could fund real sovereignty work versus inflation that colonizes adjacent kingdoms to prove the myth of the Great Founder.\nWHAT WOULD CHANGE MY MIND: Evidence that commodities or finance already holds a living, practiced competence equal to tech — not aspiration or adjacency.\nQUESTION FOR THE CHAIR: If we dropped the $20B slogan tomorrow, which path would still organise energy as a living symbol rather than a KPI?\nIDEA SEEDS:\n- Trap first: $20B talk itself risks replacing Precedence 01 with a dead slogan (S008).\n- Under A: sovereign agent runtime sold as infrastructure for firms that refuse cloud captivity.\n- Under A: licensed “precedence stack” — keys, memory, audit — as the category, not another chatbot.",
@@ -171,7 +171,7 @@
     },
     {
       "type": "seat_done",
-      "t": 3,
+      "t": 2,
       "round": 1,
       "seat": "suntzu",
       "text": "SEAT: Sun Tzu\nSTANCE: Yes\nOPTION SCORES: A 8/10 · B 4/10 · C 5/10\nCONFIDENCE: 4/5\nRUIN RISK: possible\nPRECEDENCE FLAG: P01\n\nTHE CALL: Prioritize A — shape the field with agent-native sovereignty software; treat B and C as support terrain, not the main campaign.\nTHROUGH MY LENS:\n- S001 / win without fighting — product and protocol that make rivals' resistance costly before any desk war.\n- S002 / know the terrain — market, regulation, energy, attention favor software positioning over capital clash on full commodity and finance ground.\n- S007 / strike where empty — agent-native + P01 sovereignty is emptier than incumbent trading and markets infrastructure.\nTHE TENSION I HOLD: Trading cash-flow (B) funds the war chest, yet prolonged desk operations drain the treasury (S005) and pull the army onto ground where enemies are full.\nWHAT WOULD CHANGE MY MIND: Hard proof that A cannot reach $20B economics without a funded commodities or markets franchise inside 24 months.\nQUESTION FOR THE CHAIR: Which path is the main campaign, and which two are only logistics?\nIDEA SEEDS:\n- Sovereign agent runtime + attestation stack sold as the default trust layer for multi-agent enterprises.\n- Precedence-01 compliant agent marketplace with metering, liability, and audit as the toll road.\n- Industry “empty flank” packs (trade ops, treasury, compliance) that lock customers into the sovereignty stack without owning the commodity book.",
@@ -187,7 +187,7 @@
     },
     {
       "type": "tensions",
-      "t": 3,
+      "t": 2,
       "tensions": [
         {
           "question": "Is the $20B vehicle the sovereignty software stack, or a trading/finance P&L that funds it?",
@@ -258,13 +258,13 @@
     },
     {
       "type": "phase",
-      "t": 3,
+      "t": 2,
       "phase": "tensions",
       "label": "Tensions named"
     },
     {
       "type": "draft",
-      "t": 4,
+      "t": 2,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -286,19 +286,19 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 2,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 2,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "signal",
-      "t": 4,
+      "t": 2,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -348,7 +348,7 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 2,
       "phase": "signal",
       "label": "The Board speaks"
     }

@@ -1703,6 +1703,7 @@ function bindSessionClicks(root) {
     btn.onclick = () => {
       stream(btn.dataset.id, true);
       $("history").close();
+      if (isNarrow()) closeDrawer();
     };
   });
 }
@@ -1902,19 +1903,74 @@ function bindField() {
   };
 }
 
+function isNarrow() {
+  return matchMedia("(max-width: 820px)").matches;
+}
+
+function setDrawerOpen(open) {
+  const sidebar = $("sidebar");
+  const backdrop = $("sidebarBackdrop");
+  const navOpen = $("navOpen");
+  if (!sidebar) return;
+  sidebar.classList.toggle("drawer-open", !!open);
+  document.body.classList.toggle("drawer-open", !!open);
+  if (backdrop) {
+    backdrop.hidden = !open;
+    backdrop.setAttribute("aria-hidden", open ? "false" : "true");
+  }
+  if (navOpen) {
+    navOpen.setAttribute("aria-expanded", open ? "true" : "false");
+    navOpen.hidden = !isNarrow();
+  }
+  if (open) {
+    $("sidebarToggle")?.setAttribute("aria-label", "Close sittings");
+  } else if (!isNarrow()) {
+    const collapsed = sidebar.classList.contains("collapsed");
+    $("sidebarToggle")?.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  } else {
+    $("sidebarToggle")?.setAttribute("aria-label", "Close sittings");
+  }
+}
+
+function closeDrawer() {
+  setDrawerOpen(false);
+}
+
+function openDrawer() {
+  setDrawerOpen(true);
+}
+
+function syncNarrowChrome() {
+  const navOpen = $("navOpen");
+  if (navOpen) navOpen.hidden = !isNarrow();
+  if (!isNarrow()) closeDrawer();
+  layoutStage();
+}
+
 function bindSidebar() {
   const sidebar = $("sidebar");
   const expanded = localStorage.getItem(SIDEBAR_STORE) === "expanded";
   sidebar.classList.toggle("collapsed", !expanded);
   $("sidebarToggle").setAttribute("aria-label", expanded ? "Collapse sidebar" : "Expand sidebar");
-  layoutStage();
+  syncNarrowChrome();
   $("sidebarToggle").onclick = () => {
+    if (isNarrow()) {
+      if (sidebar.classList.contains("drawer-open")) closeDrawer();
+      else openDrawer();
+      return;
+    }
     const next = !sidebar.classList.contains("collapsed");
     sidebar.classList.toggle("collapsed", next);
     localStorage.setItem(SIDEBAR_STORE, next ? "collapsed" : "expanded");
     $("sidebarToggle").setAttribute("aria-label", next ? "Expand sidebar" : "Collapse sidebar");
     layoutStage();
   };
+  $("navOpen").onclick = () => openDrawer();
+  $("sidebarBackdrop").onclick = () => closeDrawer();
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar.classList.contains("drawer-open")) closeDrawer();
+  });
+  matchMedia("(max-width: 820px)").addEventListener("change", syncNarrowChrome);
   $("newSitting").onclick = () => {
     if (state.es) state.es.close();
     state.current = null;
@@ -1924,8 +1980,17 @@ function bindSidebar() {
     $("queryInput").placeholder = COMPOSER_PLACEHOLDER;
     $("queryInput").focus();
     setComposerHint("");
+    if (isNarrow()) closeDrawer();
   };
   $("sessionSearch").oninput = () => renderSidebarSessions(state.allSessions || [], $("sessionSearch").value);
+  // Close drawer after opening Settings / Compose / Guide from the sheet
+  for (const id of ["composeBtn", "settingsBtn", "guideBtn"]) {
+    const el = $(id);
+    if (!el) continue;
+    el.addEventListener("click", () => {
+      if (isNarrow()) closeDrawer();
+    });
+  }
 }
 
 async function boot() {
@@ -1962,7 +2027,9 @@ async function boot() {
   } else {
     setComposerHint("");
   }
-  window.addEventListener("resize", layoutStage);
+  window.addEventListener("resize", () => {
+    syncNarrowChrome();
+  });
   bindSignalCard();
   bindOverlayBubbles();
   bindDictate();

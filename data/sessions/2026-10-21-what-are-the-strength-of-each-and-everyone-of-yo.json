@@ -6,7 +6,7 @@
   "events": [
     {
       "type": "setup",
-      "t": 2,
+      "t": 1,
       "title": "What are the Strength of each and everyone of you?",
       "decision": "What are the Strength of each and everyone of you?",
       "brief": "What are the Strength of each and everyone of you?",
@@ -58,13 +58,13 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 1,
       "phase": "opening",
       "label": "Awaiting chair"
     },
     {
       "type": "status",
-      "t": 2,
+      "t": 1,
       "state": "awaiting_chair",
       "runner": "cursor",
       "playbackRunner": "viewer",
