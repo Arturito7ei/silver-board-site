@@ -154,7 +154,7 @@ function renderSeats(keys) {
       "aria-label",
       `${displayName(s, key)}, ${muted ? "Muted" : "Active"}${chair ? ", Chair" : ""}${s.pillar ? `, ${s.pillar}` : ""}. Open card.`,
     );
-    el.innerHTML = `<span class="status-led" aria-hidden="true"></span>${bustHtml(s)}`;
+    el.innerHTML = bustHtml(s);
     box.appendChild(el);
     const pl = document.createElement("div");
     pl.className = `nameplate${chair ? " chair" : ""}${muted ? " muted-seat" : ""}${speaking ? " speaking" : ""}`;
@@ -165,7 +165,7 @@ function renderSeats(keys) {
     if (s.pillar || s.archetype) plateBits.push(s.pillar || s.archetype);
     const plateSub = plateBits.join(" · ");
     const muteCtrl = `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}">${muted ? "Unmute" : "Mute"}</button>`;
-    pl.innerHTML = `<span class="status-led" aria-hidden="true"></span><b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>${muteCtrl}`;
+    pl.innerHTML = `<div class="nameplate-head"><span class="status-led" aria-hidden="true"></span><b>${esc(displayName(s, key))}</b></div><small>${esc(plateSub)}</small>${muteCtrl}`;
     plates.appendChild(pl);
   });
   bindArt(box);

@@ -186,7 +186,7 @@
     },
     {
       "type": "tensions",
-      "t": 4,
+      "t": 3,
       "tensions": [
         {
           "question": "Is a standing celebrity table living counsel or persona possession?",
@@ -253,7 +253,7 @@
     },
     {
       "type": "phase",
-      "t": 4,
+      "t": 3,
       "phase": "tensions",
       "label": "Tensions named"
     },
