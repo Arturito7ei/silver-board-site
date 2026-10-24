@@ -260,7 +260,7 @@
     },
     {
       "type": "draft",
-      "t": 2,
+      "t": 3,
       "draft": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -282,19 +282,19 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 3,
       "phase": "synthesis",
       "label": "Silver Pill synthesis"
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 3,
       "phase": "ratify",
       "label": "Ratifying the Signal"
     },
     {
       "type": "signal",
-      "t": 2,
+      "t": 3,
       "signal": {
         "label": "PROCEED WITH CONDITIONS",
         "option": "A",
@@ -368,7 +368,7 @@
     },
     {
       "type": "phase",
-      "t": 2,
+      "t": 3,
       "phase": "signal",
       "label": "The Board speaks"
     }

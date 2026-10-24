@@ -157,7 +157,7 @@ body {
 .sidebar-folder.collapsed .sidebar-folder-toggle::before { transform: rotate(-90deg); }
 .sidebar-folder.collapsed .sidebar-folder-body { display: none; }
 .sidebar-folder-body { padding-bottom: 0.35rem; }
-.sidebar-sessions { list-style: none; margin: 0; padding: 0 0 0 0.65rem; }
+.sidebar-sessions { list-style: none; margin: 0; padding: 0 0 0 0.35rem; }
 .sidebar-sessions li { margin: 1px 0; }
 .sidebar-sessions button {
   width: 100%;
@@ -166,22 +166,30 @@ body {
   border: 0;
   color: var(--silver);
   font-size: 0.78rem;
-  padding: 0.4rem 0.55rem;
+  padding: 0.35rem 0.4rem;
   border-radius: 8px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .sidebar-sessions button:hover { background: rgba(255,255,255,0.06); color: var(--ink); }
 .sidebar-sessions button.active { background: rgba(196,163,90,0.15); color: var(--ink); }
 .sidebar-sessions li {
-  display: flex; align-items: center; gap: 0.15rem;
+  display: flex; align-items: flex-start; gap: 0.1rem;
 }
 .sidebar-sessions li > button.sidebar-sit {
   flex: 1; min-width: 0;
+  /* Use the full column: two lines, then ellipsis — not a short single-line clip. */
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.25;
+  max-height: calc(1.25em * 2);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .sidebar-sit-menu {
-  flex: 0 0 auto; width: 1.5rem; height: 1.5rem; padding: 0;
+  flex: 0 0 auto; width: 1.5rem; height: 1.5rem; padding: 0; margin-top: 0.2rem;
   border: 0; border-radius: 6px; background: transparent; color: var(--muted);
   font-size: 0.85rem; line-height: 1; cursor: pointer;
 }
@@ -211,6 +219,33 @@ body {
 }
 .sidebar-folder-actions button:hover { border-color: var(--gold); color: var(--ink); }
 .seat.muted-seat, .nameplate.muted-seat { opacity: 0.42; filter: grayscale(0.35); }
+/* Status LED: muted=red · unmuted idle=yellow · thinking/speaking=blue */
+.status-led {
+  --led: #e6c84a;
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--led);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 0 8px color-mix(in srgb, var(--led) 65%, transparent);
+  vertical-align: middle;
+}
+.nameplate .status-led { position: absolute; top: 6px; right: 6px; }
+.seat .status-led {
+  position: absolute; top: 6%; right: 14%; z-index: 4;
+}
+.nameplate.speaking .status-led,
+.nameplate.thinking .status-led,
+.seat.speaking .status-led,
+.seat.thinking .status-led {
+  --led: #4a8fe6;
+}
+/* Muted wins over speaking/thinking if both classes linger */
+.nameplate.muted-seat .status-led,
+.seat.muted-seat .status-led {
+  --led: #e05555;
+}
 .nameplate .mute-btn {
   display: block; margin-top: 0.15rem; font-size: 0.58rem; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--gold); background: transparent; border: 0;
@@ -539,7 +574,7 @@ button.opt.selected, button.opt[aria-pressed="true"] {
 .nameplate {
   position: absolute; z-index: 32; translate: -50% -50%; text-align: center; cursor: pointer;
   background: rgba(8, 10, 14, 0.88); border: 1px solid var(--line-strong); border-radius: 10px;
-  padding: 5px 8px 6px; min-width: 6.2rem; max-width: 9.6rem; backdrop-filter: blur(6px);
+  padding: 5px 14px 6px 8px; min-width: 6.2rem; max-width: 9.6rem; backdrop-filter: blur(6px);
 }
 .nameplate b { display: block; font-size: 0.72rem; line-height: 1.2; color: var(--ink); white-space: normal; }
 .nameplate small { display: block; font-size: 0.65rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -123,9 +123,9 @@ function bindArt(root) {
 }
 
 function isMuted(key) {
-  if (key === state.chairKey) return false;
   // Sitting-scope wins while a sitting is open (empty list = all Active for this sitting).
   // Room-scope (settings.mutedSeats) applies only with no open sitting — seeds new stamps.
+  // Chair may be muted same as seats (S3.3).
   if (state.current) return (state.sittingMuted || []).includes(key);
   return (state.mutedSeats || []).includes(key);
 }
@@ -143,29 +143,29 @@ function renderSeats(keys) {
     const s = state.byKey[key] || { key, short: key, initials: "?", color: "#c5cdd8", name: key };
     const chair = key === state.chairKey;
     const muted = isMuted(key);
+    const speaking = state.speaking === key;
     const el = document.createElement("div");
-    el.className = `seat${chair ? " chair-seat" : ""}${muted ? " muted-seat" : ""}`;
+    el.className = `seat${chair ? " chair-seat" : ""}${muted ? " muted-seat" : ""}${speaking ? " speaking" : ""}`;
     el.id = `seat-${key}`;
     el.dataset.key = key;
     el.tabIndex = 0;
     el.setAttribute("role", "button");
     el.setAttribute(
       "aria-label",
-      `${displayName(s, key)}, ${muted ? "Muted" : "Active"}${s.pillar ? `, ${s.pillar}` : ""}. Open card.`,
+      `${displayName(s, key)}, ${muted ? "Muted" : "Active"}${chair ? ", Chair" : ""}${s.pillar ? `, ${s.pillar}` : ""}. Open card.`,
     );
-    el.innerHTML = bustHtml(s);
+    el.innerHTML = `<span class="status-led" aria-hidden="true"></span>${bustHtml(s)}`;
     box.appendChild(el);
     const pl = document.createElement("div");
-    pl.className = `nameplate${chair ? " chair" : ""}${muted ? " muted-seat" : ""}`;
+    pl.className = `nameplate${chair ? " chair" : ""}${muted ? " muted-seat" : ""}${speaking ? " speaking" : ""}`;
     pl.id = `plate-${key}`;
     pl.dataset.key = key;
-    const plateSub = chair
-      ? ["Chair", s.pillar || s.archetype].filter(Boolean).join(" · ")
-      : [muted ? "Muted" : "Active", s.pillar || s.archetype].filter(Boolean).join(" · ");
-    const muteCtrl = chair
-      ? ""
-      : `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}">${muted ? "Unmute" : "Mute"}</button>`;
-    pl.innerHTML = `<b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>${muteCtrl}`;
+    const plateBits = [muted ? "Muted" : "Active"];
+    if (chair) plateBits.push("Chair");
+    if (s.pillar || s.archetype) plateBits.push(s.pillar || s.archetype);
+    const plateSub = plateBits.join(" · ");
+    const muteCtrl = `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}">${muted ? "Unmute" : "Mute"}</button>`;
+    pl.innerHTML = `<span class="status-led" aria-hidden="true"></span><b>${esc(displayName(s, key))}</b><small>${esc(plateSub)}</small>${muteCtrl}`;
     plates.appendChild(pl);
   });
   bindArt(box);
@@ -179,7 +179,7 @@ function renderSeats(keys) {
 }
 
 async function toggleMute(key) {
-  if (!key || key === state.chairKey) return;
+  if (!key) return;
   if (STATIC || !state.writable) {
     setComposerHint("Mute needs the local room (npm start).");
     return;
@@ -1818,13 +1818,13 @@ function renderSidebarSessions(sessions, filter = "") {
         if (!list?.length) continue;
         html += `<div class="sidebar-group"><div class="sidebar-group-title">${esc(g)}</div><ul class="sidebar-sessions">`;
         html += list
-          .map(
-            (s) =>
-              `<li>
-                <button type="button" class="sidebar-sit ${s.id === state.current ? "active" : ""}" data-id="${esc(s.id)}">${esc(sessionListLabel(s))}</button>
+          .map((s) => {
+            const label = sessionListLabel(s);
+            return `<li>
+                <button type="button" class="sidebar-sit ${s.id === state.current ? "active" : ""}" data-id="${esc(s.id)}" title="${esc(label)}">${esc(label)}</button>
                 <button type="button" class="sidebar-sit-menu" data-menu="${esc(s.id)}" aria-label="Sitting options">⋯</button>
-              </li>`,
-          )
+              </li>`;
+          })
           .join("");
         html += `</ul></div>`;
       }
