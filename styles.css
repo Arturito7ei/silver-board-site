@@ -223,7 +223,10 @@ body {
   cursor: pointer; font-family: inherit;
 }
 .sidebar-folder-actions button:hover { border-color: var(--gold); color: var(--ink); }
-.seat.muted-seat, .nameplate.muted-seat { opacity: 0.42; filter: grayscale(0.35); }
+/* Dim the bust only. Nameplate stays opaque so the LED and Mute/Unmute stay readable. */
+.seat.muted-seat { opacity: 0.38; filter: grayscale(0.9) brightness(0.7); }
+.nameplate.muted-seat .nameplate-head b,
+.nameplate.muted-seat small { color: var(--muted); }
 /* Status LED — left of nameplate label only (not on bust). muted=red · idle=yellow · speaking/thinking=blue */
 .nameplate-head {
   display: flex;
@@ -253,11 +256,13 @@ body {
 }
 .nameplate .mute-btn {
   display: block; margin-top: 0.15rem; font-size: 0.58rem; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--gold); background: transparent; border: 0;
-  padding: 0; cursor: pointer; font-family: inherit;
+  text-transform: uppercase; color: #e05555; background: transparent; border: 0;
+  padding: 0.15rem 0.25rem; cursor: pointer; font-family: inherit;
 }
 .nameplate .mute-btn:hover { text-decoration: underline; }
-.nameplate.muted-seat .mute-btn { color: var(--muted); }
+.nameplate .mute-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* aria-pressed=true is Unmute (seat off). Green, not washed out by the dimmed bust. */
+.nameplate .mute-btn[aria-pressed="true"] { color: #3cbe74; }
 .sidebar-foot {
   border-top: 1px solid var(--line);
   padding: 0.45rem 0.5rem 0.65rem;
@@ -545,6 +550,8 @@ button.opt.selected, button.opt[aria-pressed="true"] {
 @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-1px) scale(1.006); } }
 .stage.live .seat { filter: brightness(0.62) saturate(0.85); }
 .stage.live .seat.speaking { filter: none; z-index: 25 !important; }
+.stage.live .seat.muted-seat,
+.stage.live .seat.muted-seat.speaking { filter: grayscale(0.9) brightness(0.5); opacity: 0.38; }
 .stage.live .seat.addressed { filter: brightness(0.9); }
 .seat.speaking .bust { animation: talk 1.6s ease-in-out infinite; }
 .seat.chair-seat .bust-fallback .head { outline: 1px dashed rgba(196,163,90,0.55); outline-offset: 3px; }
@@ -577,7 +584,7 @@ button.opt.selected, button.opt[aria-pressed="true"] {
 }
 
 .nameplate {
-  position: absolute; z-index: 32; translate: -50% -50%; text-align: center; cursor: pointer;
+  position: absolute; z-index: 46; translate: -50% -50%; text-align: center; cursor: pointer;
   background: rgba(8, 10, 14, 0.88); border: 1px solid var(--line-strong); border-radius: 10px;
   padding: 5px 8px 6px; min-width: 6.2rem; max-width: 9.6rem; backdrop-filter: blur(6px);
 }
@@ -767,7 +774,7 @@ button.opt.selected, button.opt[aria-pressed="true"] {
 .sig-block ul { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; line-height: 1.45; color: var(--silver); }
 
 .playbar {
-  position: absolute; z-index: 38; right: 14px; bottom: 12px; display: flex; gap: 8px; align-items: center;
+  position: absolute; z-index: 48; right: 14px; bottom: 12px; display: flex; gap: 8px; align-items: center;
   background: rgba(8, 10, 14, 0.82); border: 1px solid var(--line); border-radius: 999px;
   padding: 4px 4px 4px 12px; backdrop-filter: blur(6px);
 }
