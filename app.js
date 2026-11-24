@@ -5,6 +5,11 @@ const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signa
 const TABLE_STORE = "silver-board-table";
 const SIDEBAR_STORE = "silver-board-sidebar";
 const FIELD_STORE = "silver-board-field";
+/** Folded phone. Open foldable widths (700px and up) keep the two-pane room. */
+const NARROW_MQ = "(max-width: 699px)";
+/** Stage narrower than this parks nameplates in a bottom dock (see styles.css). */
+const PLATE_DOCK_MAX = 680;
+const PLATE_DOCK_RESERVE = 116;
 /** Pages demo mute (no room API). Seat keys only. */
 const MUTE_STORE = "silver-board-muted";
 /** Launch demo brief — Demo sitting only (composer placeholder is Speak to the board) */
@@ -319,12 +324,14 @@ function layoutStage() {
   const stage = $("stage");
   if (!stage || !state.seats.length) return;
   const W = stage.clientWidth;
-  const narrow = matchMedia("(max-width: 820px)").matches;
-  const H = narrow ? Math.round(W * 0.62) : stage.clientHeight;
+  const fullH = stage.clientHeight;
+  const dock = W < PLATE_DOCK_MAX;
+  stage.classList.toggle("plate-dock", dock);
+  const H = dock ? Math.max(120, fullH - PLATE_DOCK_RESERVE) : fullH;
   const cx = W / 2;
-  const cy = H * (narrow ? 0.98 : 0.9);
+  const cy = H * 0.9;
   const rx = W * 0.48;
-  const ry = H * (narrow ? 0.46 : 0.42);
+  const ry = H * 0.42;
   const t = $("table");
   Object.assign(t.style, { left: `${cx - rx}px`, top: `${cy - ry}px`, width: `${rx * 2}px`, height: `${ry * 2}px` });
   const totem = $("tableTotem");
@@ -343,7 +350,7 @@ function layoutStage() {
   state.seats.forEach((key, i) => {
     const x = W * (0.1 + (0.8 * i) / Math.max(n - 1, 1));
     const d = ((x - cx) / rx) ** 2;
-    const size = H * (narrow ? 0.48 + 0.08 * d : 0.36 + 0.07 * d);
+    const size = H * (0.36 + 0.07 * d);
     const bottom = edge(x) + size * 0.2;
     const el = $(`seat-${key}`);
     if (!el) return;
@@ -362,11 +369,14 @@ function layoutStage() {
     state.geo[key] = { x, head: bottom - size * 0.72, size };
   });
   const c = $("center");
-  if (narrow) {
-    Object.assign(c.style, { left: "", top: "", width: "", height: "" });
-  } else {
-    const top = H * 0.48;
-    Object.assign(c.style, { left: `${W * 0.2}px`, width: `${W * 0.6}px`, top: `${top}px`, height: `${H - top - H * 0.1}px` });
+  if (c) {
+    const top = H * 0.42;
+    Object.assign(c.style, {
+      left: `${W * 0.1}px`,
+      width: `${W * 0.8}px`,
+      top: `${top}px`,
+      height: `${Math.max(0, H - top - 8)}px`,
+    });
   }
   if (state.speaking) moveSpot(state.speaking);
 }
@@ -943,8 +953,10 @@ function setFieldExpanded(expanded) {
   layoutStage();
 }
 
-/** Demo / replay must show Field lines without hunting the totem. */
+/** Demo / replay must show Field lines without hunting the totem.
+    On a folded phone the field stays a bar so the table keeps the screen. */
 function ensureFieldOpenForDemo() {
+  if (isNarrow()) return;
   setFieldExpanded(true);
 }
 
@@ -2002,7 +2014,7 @@ function bindField() {
 }
 
 function isNarrow() {
-  return matchMedia("(max-width: 820px)").matches;
+  return matchMedia(NARROW_MQ).matches;
 }
 
 function setDrawerOpen(open) {
@@ -2068,7 +2080,7 @@ function bindSidebar() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && sidebar.classList.contains("drawer-open")) closeDrawer();
   });
-  matchMedia("(max-width: 820px)").addEventListener("change", syncNarrowChrome);
+  matchMedia(NARROW_MQ).addEventListener("change", syncNarrowChrome);
   $("newSitting").onclick = () => {
     if (state.es) state.es.close();
     state.current = null;
@@ -2091,7 +2103,30 @@ function bindSidebar() {
   }
 }
 
+async function whenServiceWorkerReady() {
+  if (!("serviceWorker" in navigator)) return;
+  const giveUp = new Promise((resolve) => setTimeout(resolve, 2500));
+  try {
+    await Promise.race([navigator.serviceWorker.ready, giveUp]);
+  } catch {
+    return;
+  }
+  if (navigator.serviceWorker.controller) return;
+  await new Promise((resolve) => {
+    const timer = setTimeout(resolve, 1000);
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+  });
+}
+
 async function boot() {
+  await whenServiceWorkerReady();
   const seats = await api("/api/seats");
   state.byKey = Object.fromEntries((seats.advisors || []).map((a) => [a.key, a]));
   state.archetypes = seats.archetypes || [];
