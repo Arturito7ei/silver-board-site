@@ -5,6 +5,8 @@ const stepOrder = ["setup", "opening", "tensions", "synthesis", "ratify", "signa
 const TABLE_STORE = "silver-board-table";
 const SIDEBAR_STORE = "silver-board-sidebar";
 const FIELD_STORE = "silver-board-field";
+/** Pages demo mute (no room API). Seat keys only. */
+const MUTE_STORE = "silver-board-muted";
 /** Launch demo brief — Demo sitting only (composer placeholder is Speak to the board) */
 const DEMO_QUERY =
   "Provide with your strengths and how you can help as an augmented board of Advisors";
@@ -122,10 +124,32 @@ function bindArt(root) {
   }
 }
 
+function loadClientMuted() {
+  try {
+    const raw = localStorage.getItem(MUTE_STORE);
+    if (raw == null) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter((k) => typeof k === "string" && k);
+  } catch {
+    return null;
+  }
+}
+
+function saveClientMuted(keys) {
+  try {
+    localStorage.setItem(MUTE_STORE, JSON.stringify(keys));
+  } catch {
+    /* private mode / blocked storage — toggle still works this visit */
+  }
+}
+
 function isMuted(key) {
+  // Pages demo has no room API. One client list (localStorage) is the toggle,
+  // including while a canned sitting is open. Chair may be muted same as seats.
+  if (STATIC) return (state.mutedSeats || []).includes(key);
   // Sitting-scope wins while a sitting is open (empty list = all Active for this sitting).
   // Room-scope (settings.mutedSeats) applies only with no open sitting — seeds new stamps.
-  // Chair may be muted same as seats (S3.3).
   if (state.current) return (state.sittingMuted || []).includes(key);
   return (state.mutedSeats || []).includes(key);
 }
@@ -164,7 +188,8 @@ function renderSeats(keys) {
     if (chair) plateBits.push("Chair");
     if (s.pillar || s.archetype) plateBits.push(s.pillar || s.archetype);
     const plateSub = plateBits.join(" · ");
-    const muteCtrl = `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}">${muted ? "Unmute" : "Mute"}</button>`;
+    const muteLabel = muted ? "Unmute" : "Mute";
+    const muteCtrl = `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}" aria-label="${esc(`${muteLabel} ${displayName(s, key)}`)}">${muteLabel}</button>`;
     pl.innerHTML = `<div class="nameplate-head"><span class="status-led" aria-hidden="true"></span><b>${esc(displayName(s, key))}</b></div><small>${esc(plateSub)}</small>${muteCtrl}`;
     plates.appendChild(pl);
   });
@@ -178,9 +203,76 @@ function renderSeats(keys) {
   layoutStage();
 }
 
+function silenceMutedSpeaker(key) {
+  const name = displayName(state.byKey[key], key);
+  if (state.speaking === key) {
+    stopTalk();
+    state.speaking = null;
+    const spot = $("spot");
+    if (spot) spot.classList.remove("on");
+  }
+  for (const el of document.querySelectorAll(".seat, .nameplate")) {
+    if (el.dataset.key === key) el.classList.remove("speaking");
+  }
+  const cap = $("caption");
+  if (cap && !cap.hidden && ($("capWho")?.textContent || "") === name) cap.hidden = true;
+}
+
+/** Update LED, dimming, and Mute/Unmute without rebuilding busts. */
+function applyMuteChrome() {
+  const plates = $("plates");
+  if (!plates?.querySelector(".nameplate")) {
+    renderSeats(state.tableSeats?.length ? state.tableSeats : state.defaultSeats);
+    return;
+  }
+  for (const key of state.seats) {
+    const muted = isMuted(key);
+    const s = state.byKey[key] || { key, name: key };
+    const chair = key === state.chairKey;
+    const seat = $(`seat-${key}`);
+    if (seat) {
+      seat.classList.toggle("muted-seat", muted);
+      seat.setAttribute(
+        "aria-label",
+        `${displayName(s, key)}, ${muted ? "Muted" : "Active"}${chair ? ", Chair" : ""}${s.pillar ? `, ${s.pillar}` : ""}. Open card.`,
+      );
+    }
+    const plate = $(`plate-${key}`);
+    if (!plate) continue;
+    plate.classList.toggle("muted-seat", muted);
+    const plateBits = [muted ? "Muted" : "Active"];
+    if (chair) plateBits.push("Chair");
+    if (s.pillar || s.archetype) plateBits.push(s.pillar || s.archetype);
+    const small = plate.querySelector("small");
+    if (small) small.textContent = plateBits.join(" · ");
+    const btn = plate.querySelector("[data-mute]");
+    if (btn) {
+      const muteLabel = muted ? "Unmute" : "Mute";
+      btn.setAttribute("aria-pressed", muted ? "true" : "false");
+      btn.setAttribute("aria-label", `${muteLabel} ${displayName(s, key)}`);
+      btn.textContent = muteLabel;
+    }
+  }
+}
+
 async function toggleMute(key) {
   if (!key) return;
-  if (STATIC || !state.writable) {
+  if (STATIC) {
+    const room = new Set(state.mutedSeats || []);
+    if (room.has(key)) room.delete(key);
+    else room.add(key);
+    state.mutedSeats = [...room];
+    saveClientMuted(state.mutedSeats);
+    if (isMuted(key)) silenceMutedSpeaker(key);
+    applyMuteChrome();
+    const name = displayName(state.byKey[key], key);
+    setComposerHint(
+      isMuted(key) ? `${name} is Muted — off until Unmute.` : `${name} is Active.`,
+      true,
+    );
+    return;
+  }
+  if (!state.writable) {
     setComposerHint("Mute needs the local room (npm start).");
     return;
   }
@@ -584,7 +676,7 @@ function onEvent(ev) {
     if (map[ev.phase]) setStep(map[ev.phase]);
     if (ev.phase && ev.phase !== "opening") hideSittingStatus();
   }
-  if (ev.type === "seat_done") showCaption(ev.seat, ev);
+  if (ev.type === "seat_done" && !isMuted(ev.seat)) showCaption(ev.seat, ev);
   if (ev.type === "tensions") {
     hideSittingStatus();
     renderTensions(ev);
@@ -592,7 +684,10 @@ function onEvent(ev) {
   }
   if (ev.type === "draft") {
     setStep("synthesis");
-    showCaption(state.chairKey || "dalio", { parsed: { call: ev.draft?.signal || "Synthesising…" }, text: "" });
+    const chair = state.chairKey || "dalio";
+    if (!isMuted(chair)) {
+      showCaption(chair, { parsed: { call: ev.draft?.signal || "Synthesising…" }, text: "" });
+    }
   }
   if (ev.type === "signal") showSignal(ev);
   if (ev.type === "end") state.playing = false;
@@ -600,6 +695,9 @@ function onEvent(ev) {
 
 function delayFor(ev) {
   if (state.skip) return 0;
+  // Muted seats are off — don't hold the replay on a line that will not play.
+  if (ev.type === "seat_done" && isMuted(ev.seat)) return 0;
+  if (ev.type === "draft" && isMuted(state.chairKey || "dalio")) return 0;
   const base = ev.type === "seat_done" ? 1400 : ev.type === "phase" ? 600 : 400;
   return state.replay ? base / state.speed : 0;
 }
@@ -2002,6 +2100,10 @@ async function boot() {
   state.writable = !!seats.writable && !STATIC;
   state.deps = seats.deps || null;
   state.mutedSeats = Array.isArray(seats.mutedSeats) ? seats.mutedSeats.slice() : [];
+  if (STATIC) {
+    const storedMuted = loadClientMuted();
+    if (storedMuted) state.mutedSeats = storedMuted;
+  }
   if (seats.disclaimer) {
     $("disclaimer").textContent = seats.disclaimer;
   }
