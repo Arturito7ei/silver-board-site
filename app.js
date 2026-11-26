@@ -985,10 +985,13 @@ function setFieldExpanded(expanded) {
 }
 
 /** Demo / replay must show Field lines without hunting the totem.
-    On a folded phone, and in a short landscape, the field stays a bar so the portraits keep the screen. */
+    On a folded phone the field stays a bar. In landscape it opens in the page scroll. */
 function ensureFieldOpenForDemo() {
-  if (isNarrow()) return;
-  if (matchMedia("(orientation: landscape) and (max-height: 520px)").matches) return;
+  if (isLandscapePhone()) {
+    setFieldExpanded(true);
+    return;
+  }
+  if (matchMedia(NARROW_MQ).matches) return;
   setFieldExpanded(true);
 }
 
@@ -2045,8 +2048,14 @@ function bindField() {
   };
 }
 
+const LAND_PHONE_MQ = "(orientation: landscape) and (max-height: 520px)";
+
+function isLandscapePhone() {
+  return matchMedia(LAND_PHONE_MQ).matches;
+}
+
 function isNarrow() {
-  return matchMedia(NARROW_MQ).matches;
+  return matchMedia(NARROW_MQ).matches || isLandscapePhone();
 }
 
 function setDrawerOpen(open) {
@@ -2115,6 +2124,7 @@ function bindSidebar() {
   matchMedia(NARROW_MQ).addEventListener("change", syncNarrowChrome);
   matchMedia("(orientation: portrait)").addEventListener("change", syncNarrowChrome);
   matchMedia("(max-width: 940px)").addEventListener("change", syncNarrowChrome);
+  matchMedia(LAND_PHONE_MQ).addEventListener("change", syncNarrowChrome);
   window.addEventListener("resize", syncDisclaimerPad);
   $("newSitting").onclick = () => {
     if (state.es) state.es.close();
