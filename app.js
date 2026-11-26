@@ -196,10 +196,10 @@ function renderSeats(keys) {
     const muteLabel = muted ? "Unmute" : "Mute";
     const muteCtrl = `<button type="button" class="mute-btn" data-mute="${esc(key)}" aria-pressed="${muted ? "true" : "false"}" aria-label="${esc(`${muteLabel} ${displayName(s, key)}`)}">${muteLabel}</button>`;
     pl.innerHTML = `<div class="nameplate-head"><span class="status-led" aria-hidden="true"></span><b>${esc(displayName(s, key))}</b></div><small>${esc(plateSub)}</small>${muteCtrl}`;
-    plates.appendChild(pl);
+    el.appendChild(pl);
   });
   bindArt(box);
-  plates.querySelectorAll("[data-mute]").forEach((btn) => {
+  box.querySelectorAll("[data-mute]").forEach((btn) => {
     btn.onclick = (e) => {
       e.stopPropagation();
       toggleMute(btn.dataset.mute);
@@ -320,9 +320,37 @@ async function toggleMute(key) {
   }
 }
 
+function isRoster() {
+  return matchMedia("(max-width: 940px)").matches;
+}
+
 function layoutStage() {
   const stage = $("stage");
   if (!stage || !state.seats.length) return;
+  const roster = isRoster();
+  const portrait = matchMedia("(orientation: portrait)").matches;
+  stage.classList.toggle("roster", roster);
+  stage.classList.toggle("roster-carousel", roster && portrait);
+    stage.classList.toggle("roster-grid", roster && !portrait);
+  if (roster) {
+    stage.classList.remove("plate-dock");
+    for (const key of state.seats) {
+      const el = $(`seat-${key}`);
+      if (el) {
+        el.style.left = "";
+        el.style.top = "";
+        el.style.width = "";
+        el.style.height = "";
+        el.style.zIndex = "";
+      }
+      const pl = $(`plate-${key}`);
+      if (pl) {
+        pl.style.left = "";
+        pl.style.top = "";
+      }
+    }
+    return;
+  }
   const W = stage.clientWidth;
   const fullH = stage.clientHeight;
   const dock = W < PLATE_DOCK_MAX;
@@ -363,8 +391,8 @@ function layoutStage() {
     });
     const pl = $(`plate-${key}`);
     if (pl) {
-      pl.style.left = `${x}px`;
-      pl.style.top = `${edge(x) + H * 0.01}px`;
+      pl.style.left = "";
+      pl.style.top = "";
     }
     state.geo[key] = { x, head: bottom - size * 0.72, size };
   });
@@ -407,6 +435,9 @@ function markSpeaking(seat) {
   for (const el of document.querySelectorAll(".seat")) el.classList.toggle("speaking", el.dataset.key === seat);
   for (const el of document.querySelectorAll(".nameplate")) el.classList.toggle("speaking", el.dataset.key === seat);
   moveSpot(seat);
+  if ($("stage")?.classList.contains("roster-carousel")) {
+    document.getElementById(`seat-${seat}`)?.scrollIntoView({ inline: "center", block: "nearest" });
+  }
   stopTalk();
   const bust = document.querySelector(`#seat-${seat} .bust`);
   if (bust?.classList.contains("has-art")) {
@@ -954,9 +985,13 @@ function setFieldExpanded(expanded) {
 }
 
 /** Demo / replay must show Field lines without hunting the totem.
-    On a folded phone the field stays a bar so the table keeps the screen. */
+    On a folded phone the field stays a bar. In landscape it opens in the page scroll. */
 function ensureFieldOpenForDemo() {
-  if (isNarrow()) return;
+  if (isLandscapePhone()) {
+    setFieldExpanded(true);
+    return;
+  }
+  if (matchMedia(NARROW_MQ).matches) return;
   setFieldExpanded(true);
 }
 
@@ -2013,8 +2048,14 @@ function bindField() {
   };
 }
 
+const LAND_PHONE_MQ = "(orientation: landscape) and (max-height: 520px)";
+
+function isLandscapePhone() {
+  return matchMedia(LAND_PHONE_MQ).matches;
+}
+
 function isNarrow() {
-  return matchMedia(NARROW_MQ).matches;
+  return matchMedia(NARROW_MQ).matches || isLandscapePhone();
 }
 
 function setDrawerOpen(open) {
@@ -2081,6 +2122,10 @@ function bindSidebar() {
     if (e.key === "Escape" && sidebar.classList.contains("drawer-open")) closeDrawer();
   });
   matchMedia(NARROW_MQ).addEventListener("change", syncNarrowChrome);
+  matchMedia("(orientation: portrait)").addEventListener("change", syncNarrowChrome);
+  matchMedia("(max-width: 940px)").addEventListener("change", syncNarrowChrome);
+  matchMedia(LAND_PHONE_MQ).addEventListener("change", syncNarrowChrome);
+  window.addEventListener("resize", syncDisclaimerPad);
   $("newSitting").onclick = () => {
     if (state.es) state.es.close();
     state.current = null;
@@ -2101,6 +2146,34 @@ function bindSidebar() {
       if (isNarrow()) closeDrawer();
     });
   }
+}
+
+function setDisclaimer(text) {
+  const el = $("disclaimer");
+  if (!el) return;
+  const span = el.querySelector(".disclaimer-text");
+  if (span) span.textContent = text;
+  else el.textContent = text;
+  syncDisclaimerPad();
+}
+
+function syncDisclaimerPad() {
+  const el = $("disclaimer");
+  if (!el) return;
+  const height = Math.ceil(el.getBoundingClientRect().height);
+  document.documentElement.style.setProperty("--disclaimer-pad", `${height}px`);
+}
+
+function bindDisclaimer() {
+  const el = $("disclaimer");
+  if (!el || el.dataset.bound) return;
+  el.dataset.bound = "1";
+  el.addEventListener("click", () => {
+    const open = el.classList.toggle("expanded");
+    el.setAttribute("aria-expanded", open ? "true" : "false");
+    syncDisclaimerPad();
+  });
+  syncDisclaimerPad();
 }
 
 async function whenServiceWorkerReady() {
@@ -2139,9 +2212,8 @@ async function boot() {
     const storedMuted = loadClientMuted();
     if (storedMuted) state.mutedSeats = storedMuted;
   }
-  if (seats.disclaimer) {
-    $("disclaimer").textContent = seats.disclaimer;
-  }
+  if (seats.disclaimer) setDisclaimer(seats.disclaimer);
+  bindDisclaimer();
   const stored = (() => {
     try {
       return JSON.parse(localStorage.getItem(TABLE_STORE) || "null");
